@@ -1,0 +1,129 @@
+<Rive version="1" kind="fragment">
+    <Artboard defaultStateMachineId="0:7" styleId="0:5" width="480" height="300" name="CircuitPOC" id="0:2">
+        <LayoutComponentStyle name="Artboard Style" id="0:5"/>
+
+        <Fill name="Background">
+            <SolidColor colorValue="FFFDF8EF" name="Color"/>
+        </Fill>
+
+        <!-- circuit wire: closed loop (80,60)-(400,60)-(400,240)-(80,240) -->
+        <Shape x="240" y="150" name="Wire" id="0:10">
+            <PointsPath isClosed="true" name="Path" id="0:11">
+                <StraightVertex x="-160" y="-90"/>
+                <StraightVertex x="160" y="-90"/>
+                <StraightVertex x="160" y="90"/>
+                <StraightVertex x="-160" y="90"/>
+            </PointsPath>
+            <Stroke thickness="10" join="round" cap="round" transformAffectsStroke="false" name="Stroke">
+                <SolidColor colorValue="FF14B8A6" name="Color"/>
+            </Stroke>
+        </Shape>
+
+        <!-- battery symbol on the bottom edge -->
+        <Shape x="228" y="240" name="BatLong" id="0:20">
+            <PointsPath isClosed="false" name="Path" id="0:21">
+                <StraightVertex x="0" y="-16"/>
+                <StraightVertex x="0" y="16"/>
+            </PointsPath>
+            <Stroke thickness="6" cap="round" transformAffectsStroke="false" name="Stroke">
+                <SolidColor colorValue="FF0F766E" name="Color"/>
+            </Stroke>
+        </Shape>
+        <Shape x="252" y="240" name="BatShort" id="0:22">
+            <PointsPath isClosed="false" name="Path" id="0:23">
+                <StraightVertex x="0" y="-8"/>
+                <StraightVertex x="0" y="8"/>
+            </PointsPath>
+            <Stroke thickness="11" cap="round" transformAffectsStroke="false" name="Stroke">
+                <SolidColor colorValue="FF0F766E" name="Color"/>
+            </Stroke>
+        </Shape>
+
+        <!-- electrons (r=7, app-consistent) -->
+        <Shape x="80" y="60" name="E1" id="0:30">
+            <Ellipse width="14" height="14" name="Path" id="0:31"/>
+            <Fill name="Fill">
+                <SolidColor colorValue="FFFACC15" name="Color"/>
+            </Fill>
+        </Shape>
+        <Shape x="233.3333" y="240" name="E2" id="0:40">
+            <Ellipse width="14" height="14" name="Path" id="0:41"/>
+            <Fill name="Fill">
+                <SolidColor colorValue="FFFACC15" name="Color"/>
+            </Fill>
+        </Shape>
+        <Shape x="400" y="73.3333" name="E3" id="0:50">
+            <Ellipse width="14" height="14" name="Path" id="0:51"/>
+            <Fill name="Fill">
+                <SolidColor colorValue="FFFACC15" name="Color"/>
+            </Fill>
+        </Shape>
+
+        <StateMachine name="State Machine 1" id="0:7">
+            <StateMachineLayer name="Layer 1" id="0:8">
+                <AnyState x="200" y="-120"/>
+                <ExitState x="400" y="-120"/>
+                <EntryState>
+                    <StateTransition stateToId="0:12"/>
+                </EntryState>
+                <AnimationState x="200" animationId="0:6" id="0:12"/>
+            </StateMachineLayer>
+        </StateMachine>
+
+        <!-- flow: 300 frames @60fps = 5s loop, 1000px perimeter, 3.333px/frame -->
+        <LinearAnimation loopValue="loop" fps="60" duration="300" name="flow" id="0:6">
+            <KeyedObject objectId="0:30">
+                <KeyedProperty propertyKey="13">
+                    <KeyFrameDouble value="80" frame="0" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="96" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="150" interpolationType="1"/>
+                    <KeyFrameDouble value="80" frame="246" interpolationType="1"/>
+                    <KeyFrameDouble value="80" frame="300" interpolationType="1"/>
+                </KeyedProperty>
+                <KeyedProperty propertyKey="14">
+                    <KeyFrameDouble value="60" frame="0" interpolationType="1"/>
+                    <KeyFrameDouble value="60" frame="96" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="150" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="246" interpolationType="1"/>
+                    <KeyFrameDouble value="60" frame="300" interpolationType="1"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:40">
+                <KeyedProperty propertyKey="13">
+                    <KeyFrameDouble value="233.3333" frame="0" interpolationType="1"/>
+                    <KeyFrameDouble value="80" frame="46" interpolationType="1"/>
+                    <KeyFrameDouble value="80" frame="100" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="196" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="250" interpolationType="1"/>
+                    <KeyFrameDouble value="233.3333" frame="300" interpolationType="1"/>
+                </KeyedProperty>
+                <KeyedProperty propertyKey="14">
+                    <KeyFrameDouble value="240" frame="0" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="46" interpolationType="1"/>
+                    <KeyFrameDouble value="60" frame="100" interpolationType="1"/>
+                    <KeyFrameDouble value="60" frame="196" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="250" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="300" interpolationType="1"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:50">
+                <KeyedProperty propertyKey="13">
+                    <KeyFrameDouble value="400" frame="0" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="50" interpolationType="1"/>
+                    <KeyFrameDouble value="80" frame="146" interpolationType="1"/>
+                    <KeyFrameDouble value="80" frame="200" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="296" interpolationType="1"/>
+                    <KeyFrameDouble value="400" frame="300" interpolationType="1"/>
+                </KeyedProperty>
+                <KeyedProperty propertyKey="14">
+                    <KeyFrameDouble value="73.3333" frame="0" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="50" interpolationType="1"/>
+                    <KeyFrameDouble value="240" frame="146" interpolationType="1"/>
+                    <KeyFrameDouble value="60" frame="200" interpolationType="1"/>
+                    <KeyFrameDouble value="60" frame="296" interpolationType="1"/>
+                    <KeyFrameDouble value="73.3333" frame="300" interpolationType="1"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+    </Artboard>
+</Rive>

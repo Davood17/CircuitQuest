@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>آفلاین — ماجرای مدار</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+      background: #fffdf8;
+      color: #134e4a;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      max-width: 420px;
+      background: #fff;
+      border: 2px solid #99f6e4;
+      border-radius: 28px;
+      padding: 40px 28px;
+      box-shadow: 0 12px 32px rgba(13, 148, 136, 0.12);
+    }
+    .robot { font-size: 72px; display: block; animation: tilt 2.2s ease-in-out infinite; }
+    @keyframes tilt { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+    h1 { font-size: 22px; margin: 18px 0 10px; color: #0f766e; }
+    p { font-size: 15px; line-height: 2; color: #475569; }
+    .bulb { font-size: 26px; letter-spacing: 6px; margin-top: 14px; }
+    button {
+      margin-top: 22px;
+      background: #0d9488;
+      color: #fff;
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 34px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="robot">🤖</span>
+    <h1>وای، اینترنت قطع شد!</h1>
+    <p>
+      رباتِ معلم می‌گوید: «نگران نباش مهندس کوچک!<br />
+      مدارِ اینترنت‌مان فعلاً باز شده. 😄<br />
+      به محض وصل شدن، درس‌ها و آزمایشگاه دوباره در دسترس‌اند.»
+    </p>
+    <div class="bulb">💡—💡—💡</div>
+    <button onclick="location.reload()">تلاش دوباره</button>
+  </div>
+</body>
+</html>
