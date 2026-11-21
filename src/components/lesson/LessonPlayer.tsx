@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson } from '@/content/types';
 import { CHALLENGE_KINDS, Scene } from './scenes';
 import { MiniLab } from '@/components/circuit/CircuitView';
@@ -28,8 +28,16 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
    *  and FINISH the requested mission before the next button unlocks */
   const [speechDone, setSpeechDone] = useState(false);
   const [taskDone, setTaskDone] = useState(false);
+  /** how much of the teacher's speech has been heard (drives the button fill + counter) */
+  const [speech, setSpeech] = useState<{ heard: number; total: number } | null>(null);
   const startTime = useRef(Date.now());
   const doneTasks = useRef<Set<string>>(getDoneTasks());
+
+  /** stable progress reporter — RobotSpeech fires it on mount and on every advance,
+   *  so the counter naturally restarts on each new screen (no manual reset needed) */
+  const handleSpeechProgress = useCallback((heard: number, total: number) => {
+    setSpeech({ heard, total });
+  }, []);
 
   const screens = lesson.screens;
   const screen = screens[step];
@@ -98,7 +106,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                 <h2 className="text-2xl font-extrabold leading-snug">{tx(screen.title)}</h2>
                 <span aria-hidden className="mt-1.5 block h-1.5 w-20 rounded-full bg-gradient-to-r from-teal-400 via-amber-300 to-teal-400" />
               </div>
-              <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} />
+              <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} onProgress={handleSpeechProgress} />
               {screen.tip && (
                 <div className="rounded-2xl bg-amber-50 border-2 border-amber-200 p-3.5 text-sm font-bold text-amber-900 shadow-sm">
                   💡 {tx(screen.tip)}
@@ -113,7 +121,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                 </div>
               )}
               {screen.scene && (
-                <div className="mt-auto">
+                <div className="-mx-3 flex min-h-[220px] flex-1 flex-col justify-end">
                   <Scene spec={screen.scene} animated={motion} onTaskDone={() => setTaskDone(true)} />
                 </div>
               )}
@@ -185,7 +193,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             </h2>
             {screen.scene && <Scene spec={screen.scene} animated={motion} />}
             {screen.body && screen.speaker === 'robot' && (
-              <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} />
+              <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} onProgress={handleSpeechProgress} />
             )}
             <Quiz
               questions={lesson.quiz}
@@ -244,11 +252,30 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     return true;
   }, [screen, step, quizResult, lesson.id, needsSpeech, speechDone, isChallenge, taskDone]);
 
-  // what the child still has to do before the next button unlocks
-  const gateHint = !canAdvance && !isLast ? (!speechDone && needsSpeech ? t('lesson.gateListen') : t('lesson.gateTask')) : null;
+  // ---- gate feedback -------------------------------------------------------
+  // while the child is still listening, the lock message is replaced by a
+  // friendly chunk counter («۱ از ۴»); other gates keep their 🔒 hint
+  const listenGateActive = needsSpeech && !speechDone;
+  const listenCount =
+    listenGateActive && speech
+      ? t('lesson.speechCount', { heard: Math.min(speech.heard, speech.total), total: speech.total })
+      : null;
+  const gateHint = !canAdvance && !isLast && !listenGateActive ? t('lesson.gateTask') : null;
   // a gate row WILL exist on this screen (even before/after it is hinted) — reserve
   // its height so the footer never resizes and the pinned scene never shifts
-  const gatePossible = !isLast && (needsSpeech || isChallenge);
+  const gatePossible = !isLast && (needsSpeech || isChallenge || screen.type === 'build' || screen.type === 'quiz');
+
+  // how full the next button's progress fill is (average of the active gates)
+  const gateProgress = useMemo(() => {
+    const fracs: number[] = [];
+    if (needsSpeech) fracs.push(speech ? Math.min(1, speech.heard / Math.max(1, speech.total)) : 0);
+    if (isChallenge) fracs.push(taskDone ? 1 : 0);
+    if (screen.type === 'quiz')
+      fracs.push(quizResult && quizResult.score / Math.max(1, quizResult.total) >= 0.7 ? 1 : 0);
+    if (screen.type === 'build') fracs.push(doneTasks.current.has(`${lesson.id}:${step}`) ? 1 : 0);
+    return fracs.length ? fracs.reduce((a, b) => a + b, 0) / fracs.length : 1;
+  }, [needsSpeech, speech, isChallenge, taskDone, screen, quizResult, lesson.id, step]);
+
   const nextText =
     !isLast && screen.type === 'explain' && screen.nextLabel ? tx(screen.nextLabel) : t('lesson.next');
 
@@ -277,11 +304,15 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
       {/* footer nav */}
       <footer className="border-t bg-white px-4 py-3">
         <div className={`max-w-2xl mx-auto ${gatePossible ? 'min-h-[76px]' : ''}`}>
-          {gateHint && (
+          {listenCount ? (
+            <p className="mb-2 text-center text-[13px] font-extrabold text-teal-600" aria-live="polite">
+              {listenCount}
+            </p>
+          ) : gateHint ? (
             <p className="mb-2 text-center text-[13px] font-extrabold text-teal-600 animate-pulse" aria-live="polite">
               🔒 {gateHint}
             </p>
-          )}
+          ) : null}
           <div className="flex gap-3">
             {step > 0 && (
               <Button variant="outline" className="h-12 flex-1 font-bold" onClick={() => setStep((s) => s - 1)}>
@@ -290,11 +321,22 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             )}
             {!isLast ? (
               <Button
-                className="h-12 flex-[2] font-bold bg-teal-600 hover:bg-teal-700"
+                className="relative h-12 flex-[2] overflow-hidden font-bold bg-teal-600 hover:bg-teal-700 disabled:opacity-100"
                 disabled={!canAdvance}
                 onClick={() => setStep((s) => s + 1)}
               >
-                {nextText} <ArrowRight className="w-5 h-5 ms-1 cq-flip-rtl" />
+                {/* progress fill: the button charges up with the dialogue /
+                    mission progress instead of looking faded and locked */}
+                {!canAdvance && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-0 start-0 bg-teal-950/70 transition-[width] duration-300 ease-out"
+                    style={{ width: `${Math.round(gateProgress * 100)}%` }}
+                  />
+                )}
+                <span className="relative">
+                  {nextText} <ArrowRight className="w-5 h-5 ms-1 cq-flip-rtl" />
+                </span>
               </Button>
             ) : (
               <Button className="h-12 flex-[2] font-bold bg-amber-500 hover:bg-amber-600" onClick={finishLesson}>

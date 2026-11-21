@@ -23,7 +23,16 @@ import { useI18n } from '@/lib/i18n';
 import { sfx } from '@/lib/sfx';
 import { groupDialogue } from '@/lib/dialogue';
 
-export function RobotSpeech({ text, onDone }: { text: string; onDone?: () => void }) {
+export function RobotSpeech({
+  text,
+  onDone,
+  onProgress,
+}: {
+  text: string;
+  onDone?: () => void;
+  /** reports how many dialogue chunks have been heard (fires on mount + every advance) */
+  onProgress?: (heard: number, total: number) => void;
+}) {
   const motion = useSettings((s) => s.motion);
   const { t } = useI18n();
   const chunks = useMemo(() => groupDialogue(text), [text]);
@@ -36,6 +45,11 @@ export function RobotSpeech({ text, onDone }: { text: string; onDone?: () => voi
   useEffect(() => () => {
     if (talkTimer.current) window.clearTimeout(talkTimer.current);
   }, []);
+
+  // report listening progress up to the lesson player (drives the button fill + counter)
+  useEffect(() => {
+    onProgress?.(Math.min(idx + 1, chunks.length), chunks.length);
+  }, [idx, chunks.length, onProgress]);
 
   // the whole speech has been heard → unlock the gate (lesson "next" button)
   const heardAll = idx >= chunks.length - 1;
@@ -94,7 +108,9 @@ export function RobotSpeech({ text, onDone }: { text: string; onDone?: () => voi
           🤖 {t('lesson.robotName')}
         </span>
 
-        <div className="min-h-14 space-y-1 py-0.5">
+        {/* a taller, height-stable body keeps short chunks centered and the
+            page layout calm — long chunks simply grow it */}
+        <div className="flex min-h-[88px] flex-col justify-center space-y-1 py-0.5">
           {cur.map((lineText, i) => (
             <p
               key={`${idx}-${i}`}

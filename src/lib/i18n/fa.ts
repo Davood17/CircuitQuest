@@ -77,7 +77,7 @@ export const fa: Record<TranslationKey, string> = {
   'lesson.notFound': 'درس پیدا نشد.',
 
   // دروازه‌های درس (قانون: دکمهٔ بعدی تا کامل نشدن حرف معلم و مأموریت قفل است)
-  'lesson.gateListen': 'اول حرفِ معلم رو کامل گوش بده!',
+  'lesson.speechCount': '{heard} از {total}',
   'lesson.gateTask': 'اول مأموریت رو کامل کن!',
 
   // quiz types

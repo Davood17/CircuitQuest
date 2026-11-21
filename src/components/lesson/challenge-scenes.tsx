@@ -31,7 +31,11 @@ type ChallengeProps = { onTaskDone?: () => void };
 
 /* ============================================================ page 1 panel */
 
-/** Static "world of commanding" panel — bright engineering room + 3 icon cards. */
+/** Static "world of commanding" panel — bright engineering room + 3 icon cards.
+ *  The SVG fills ALL the free space under the teacher's speech bubble (h-full
+ *  inside a flex-1 wrapper): the drawing is anchored to the panel's bottom
+ *  (preserveAspectRatio=xMidYMax meet) and the sky continues seamlessly above
+ *  it, so the page has no empty white hole between the text and the picture. */
 export function CommandIntroScene() {
   const { lang } = useI18n();
   const tx = (t: { en: string; fa?: string }) => (lang === 'fa' && t.fa ? t.fa : t.en);
@@ -43,40 +47,67 @@ export function CommandIntroScene() {
   ];
 
   return (
-    <svg viewBox="0 0 640 300" className="w-full rounded-2xl border" style={{ background: 'linear-gradient(180deg,#e0f2fe 0%,#f0f9ff 55%,#fef9c3 100%)' }} role="img" aria-label={tx(L('The engineering room', 'اتاق مهندسی'))}>
-      {/* window with sun (small & high, so the card row below stays clear) */}
-      <rect x="505" y="22" width="95" height="64" rx="10" fill="#bae6fd" stroke="#7dd3fc" strokeWidth="3" />
-      <circle cx="533" cy="52" r="12" fill="#fde047" />
-      <path d="M 533 34 L 533 27 M 533 70 L 533 77 M 515 52 L 508 52 M 551 52 L 558 52" stroke="#fde047" strokeWidth="3" strokeLinecap="round" />
+    <svg
+      viewBox="0 0 640 560"
+      preserveAspectRatio="xMidYMax meet"
+      className="min-h-0 w-full flex-1 rounded-2xl border"
+      style={{ background: '#e0f2fe' }}
+      role="img"
+      aria-label={tx(L('The engineering room', 'اتاق مهندسی'))}
+    >
+      <defs>
+        <linearGradient id="cq-command-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#e0f2fe" />
+          <stop offset="0.55" stopColor="#f0f9ff" />
+          <stop offset="1" stopColor="#fef9c3" />
+        </linearGradient>
+      </defs>
+      {/* sky / wall backdrop — starts at the same color as the element background,
+          so the area above the drawing blends in seamlessly */}
+      <rect x="0" y="0" width="640" height="560" fill="url(#cq-command-sky)" />
+      {/* window with sun (top corner) */}
+      <rect x="498" y="90" width="104" height="78" rx="12" fill="#bae6fd" stroke="#7dd3fc" strokeWidth="3" />
+      <circle cx="532" cy="124" r="14" fill="#fde047" />
+      <path d="M 532 104 L 532 96 M 532 144 L 532 152 M 512 124 L 504 124 M 552 124 L 560 124" stroke="#fde047" strokeWidth="3.5" strokeLinecap="round" />
       {/* wall shelf with tools */}
-      <rect x="30" y="34" width="150" height="8" rx="4" fill="#94a3b8" />
-      <text x="52" y="30" fontSize="17">🔧</text>
-      <text x="86" y="30" fontSize="17">🪛</text>
-      <text x="120" y="30" fontSize="17">🔋</text>
-      {/* welcome banner — TOP CENTER, hanging between shelf & window,
-          safely away from the three cards below */}
-      <rect x="190" y="22" width="260" height="46" rx="12" fill="#ffffff" stroke="#38bdf8" strokeWidth="3" />
-      <text x="320" y="51" fontSize={lang === 'fa' ? 15 : 13.5} fontWeight="800" fill="#0369a1" textAnchor="middle">
+      <rect x="28" y="108" width="152" height="8" rx="4" fill="#94a3b8" />
+      <text x="50" y="102" fontSize="18">🔧</text>
+      <text x="88" y="102" fontSize="18">🪛</text>
+      <text x="126" y="102" fontSize="18">🔋</text>
+      {/* welcome banner — TOP CENTER, hanging between shelf & window */}
+      <rect x="186" y="94" width="268" height="58" rx="16" fill="#ffffff" stroke="#38bdf8" strokeWidth="3.5" />
+      <text x="320" y="129" fontSize={lang === 'fa' ? 16 : 14.5} fontWeight="800" fill="#0369a1" textAnchor="middle">
         {tx(L('Welcome to the world of commanding!', 'به دنیای فرماندهی خوش اومدی!'))}
       </text>
-      {/* engineering desk */}
-      <rect x="60" y="212" width="520" height="12" rx="6" fill="#d6a75c" />
-      <rect x="96" y="224" width="14" height="42" rx="4" fill="#b8873f" />
-      <rect x="530" y="224" width="14" height="42" rx="4" fill="#b8873f" />
-      {/* the three device cards — middle band: below the banner, above the desk,
-          never touching the writing or the window */}
+      {/* soft clouds & sparkles filling the wall space */}
+      <g fill="#ffffff" opacity="0.85">
+        <ellipse cx="105" cy="210" rx="34" ry="13" />
+        <ellipse cx="130" cy="202" rx="22" ry="10" />
+        <ellipse cx="520" cy="245" rx="30" ry="11" />
+      </g>
+      <text x="180" y="245" fontSize="17">✨</text>
+      <text x="452" y="202" fontSize="15">✨</text>
+      {/* the three device cards — the heart of the panel */}
       {cards.map((c, i) => {
-        const x = 78 + i * 168;
+        const x = 68 + i * 172;
         return (
           <g key={i}>
-            <rect x={x} y="94" width="140" height="104" rx="16" fill="#ffffff" stroke={c.color} strokeWidth="4" />
-            <text x={x + 70} y="144" fontSize="34" textAnchor="middle">{c.icon}</text>
-            <text x={x + 70} y="180" fontSize="14" fontWeight="800" fill="#334155" textAnchor="middle">
+            <rect x={x} y="180" width="150" height="140" rx="20" fill="#ffffff" stroke={c.color} strokeWidth="4.5" />
+            <text x={x + 75} y="248" fontSize="40" textAnchor="middle">{c.icon}</text>
+            <text x={x + 75} y="290" fontSize="15" fontWeight="800" fill="#334155" textAnchor="middle">
               {tx(c.label)}
             </text>
           </g>
         );
       })}
+      {/* engineering desk with plant & toolbox */}
+      <rect x="56" y="366" width="528" height="14" rx="7" fill="#d6a75c" />
+      <rect x="96" y="380" width="15" height="118" rx="5" fill="#b8873f" />
+      <rect x="529" y="380" width="15" height="118" rx="5" fill="#b8873f" />
+      <text x="104" y="360" fontSize="24">🪴</text>
+      <text x="488" y="360" fontSize="23">🧰</text>
+      {/* soft floor shadow */}
+      <ellipse cx="320" cy="524" rx="255" ry="10" fill="#a16207" opacity="0.08" />
     </svg>
   );
 }

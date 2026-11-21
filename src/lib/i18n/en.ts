@@ -75,7 +75,7 @@ export const en = {
   'lesson.notFound': 'Lesson not found.',
 
   // lesson gates (user rule: next stays locked until speech heard + mission done)
-  'lesson.gateListen': 'First listen to the whole teacher speech!',
+  'lesson.speechCount': '{heard} of {total}',
   'lesson.gateTask': 'First finish the mission!',
 
   // quiz types
