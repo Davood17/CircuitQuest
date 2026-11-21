@@ -27,16 +27,26 @@ import { L } from '@/content/helpers';
 /** scene kinds that gate the lesson's "next" button on their completion */
 export const CHALLENGE_KINDS = new Set(['simple-vs-smart', 'toy-hospital']);
 
+/** scene kinds rendered as a full-page room backdrop (immersive explain pages):
+ *  the wall/sky gradient is painted by the lesson page itself and the drawing
+ *  floats on top of it, so the teacher's speech lives INSIDE the room */
+export const BACKDROP_KINDS = new Set(['command-intro']);
+
 type ChallengeProps = { onTaskDone?: () => void };
 
 /* ============================================================ page 1 panel */
 
 /** Static "world of commanding" panel — bright engineering room + 3 icon cards.
- *  The SVG fills ALL the free space under the teacher's speech bubble (h-full
- *  inside a flex-1 wrapper): the drawing is anchored to the panel's bottom
- *  (preserveAspectRatio=xMidYMax meet) and the sky continues seamlessly above
- *  it, so the page has no empty white hole between the text and the picture. */
-export function CommandIntroScene() {
+ *
+ *  Two render variants:
+ *  - card (default): a self-contained rounded panel — the sky gradient lives
+ *    inside the SVG and the element background blends into it above the drawing.
+ *  - backdrop: the panel DISSOLVES into the page. The SVG turns transparent
+ *    (no border, no rounding, no internal sky rect) and the lesson page paints
+ *    one continuous wall/sky gradient behind everything — so the desk, window,
+ *    shelf and cards keep their exact pinned spot at the bottom while the
+ *    teacher's speech bubble floats inside the very same room. */
+export function CommandIntroScene({ backdrop = false }: { backdrop?: boolean }) {
   const { lang } = useI18n();
   const tx = (t: { en: string; fa?: string }) => (lang === 'fa' && t.fa ? t.fa : t.en);
 
@@ -50,8 +60,8 @@ export function CommandIntroScene() {
     <svg
       viewBox="0 0 640 560"
       preserveAspectRatio="xMidYMax meet"
-      className="min-h-0 w-full flex-1 rounded-2xl border"
-      style={{ background: '#e0f2fe' }}
+      className={backdrop ? 'min-h-0 w-full flex-1' : 'min-h-0 w-full flex-1 rounded-2xl border'}
+      style={backdrop ? undefined : { background: '#e0f2fe' }}
       role="img"
       aria-label={tx(L('The engineering room', 'اتاق مهندسی'))}
     >
@@ -62,9 +72,9 @@ export function CommandIntroScene() {
           <stop offset="1" stopColor="#fef9c3" />
         </linearGradient>
       </defs>
-      {/* sky / wall backdrop — starts at the same color as the element background,
-          so the area above the drawing blends in seamlessly */}
-      <rect x="0" y="0" width="640" height="560" fill="url(#cq-command-sky)" />
+      {/* sky / wall backdrop — only in card mode; in backdrop mode the page
+          gradient paints one continuous sky so no seam ever shows */}
+      {!backdrop && <rect x="0" y="0" width="640" height="560" fill="url(#cq-command-sky)" />}
       {/* window with sun (top corner) */}
       <rect x="498" y="90" width="104" height="78" rx="12" fill="#bae6fd" stroke="#7dd3fc" strokeWidth="3" />
       <circle cx="532" cy="124" r="14" fill="#fde047" />

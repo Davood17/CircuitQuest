@@ -15,7 +15,7 @@ import { sfx } from '@/lib/sfx';
 import { L } from '@/content/helpers';
 import { CommandIntroScene, SimpleVsSmartScene, ToyHospitalScene } from './challenge-scenes';
 
-export { CHALLENGE_KINDS } from './challenge-scenes';
+export { CHALLENGE_KINDS, BACKDROP_KINDS } from './challenge-scenes';
 import {
   AmpereDetectiveScene,
   BatteryBackpackScene,
@@ -518,11 +518,14 @@ export function Scene({
   spec,
   animated = true,
   onTaskDone,
+  variant = 'card',
 }: {
   spec: SceneSpec;
   animated?: boolean;
   /** challenge scenes call this when the child finishes their mission */
   onTaskDone?: () => void;
+  /** 'backdrop' dissolves frame-styled scenes into the page's room background */
+  variant?: 'card' | 'backdrop';
 }) {
   const kind = spec.kind;
   const p = spec.props ?? {};
@@ -546,7 +549,7 @@ export function Scene({
     case 'pot-demo': return <PotDemoScene />;
     case 'breadboard-map': return <BreadboardMapScene />;
     // redesigned l0-1 «الکترونیک چیست؟» — see challenge-scenes.tsx
-    case 'command-intro': return <CommandIntroScene />;
+    case 'command-intro': return <CommandIntroScene backdrop={variant === 'backdrop'} />;
     case 'simple-vs-smart': return <SimpleVsSmartScene onTaskDone={onTaskDone} />;
     case 'toy-hospital': return <ToyHospitalScene onTaskDone={onTaskDone} />;
     case 'medal-party': return <MedalPartyScene />;

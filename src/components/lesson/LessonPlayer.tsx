@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson } from '@/content/types';
-import { CHALLENGE_KINDS, Scene } from './scenes';
+import { CHALLENGE_KINDS, BACKDROP_KINDS, Scene } from './scenes';
 import { MiniLab } from '@/components/circuit/CircuitView';
 import { Quiz } from './Quiz';
 import { RobotSpeech } from './RobotSpeech';
@@ -96,10 +96,11 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
       case 'explain':
         if (screen.speaker === 'robot') {
           // the teacher robot speaks the body inside a speech bubble.
-          // The scene is PINNED to the bottom of the page (mt-auto inside a
-          // full-height flex column): the speech bubble may grow and shrink
-          // between dialogue chunks, but the picture below keeps a fixed
-          // resting place — it never jumps up and down with the text anymore.
+          // On immersive pages the scene IS the room: a page-wide wall gradient
+          // runs behind everything, while the drawing (desk, window, shelf…) is
+          // PINNED to the bottom of the content area (flex-1 + justify-end, and
+          // xMidYMax inside the SVG) — the bubble may grow and shrink between
+          // dialogue chunks, but the furniture never moves with the text.
           return (
             <div className="flex flex-1 flex-col gap-4">
               <div>
@@ -121,8 +122,15 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                 </div>
               )}
               {screen.scene && (
-                <div className="-mx-3 flex min-h-[220px] flex-1 flex-col justify-end">
-                  <Scene spec={screen.scene} animated={motion} onTaskDone={() => setTaskDone(true)} />
+                <div
+                  className={`${immersive ? '-mx-4' : '-mx-3'} flex min-h-[220px] flex-1 flex-col justify-end`}
+                >
+                  <Scene
+                    spec={screen.scene}
+                    animated={motion}
+                    onTaskDone={() => setTaskDone(true)}
+                    variant={immersive ? 'backdrop' : 'card'}
+                  />
                 </div>
               )}
             </div>
@@ -238,6 +246,14 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     (screen.type === 'explain' || screen.type === 'quiz') && screen.speaker === 'robot' && !!screen.body;
   const isChallenge =
     screen.type === 'explain' && !!screen.scene && CHALLENGE_KINDS.has(screen.scene.kind);
+  /** immersive room page (l0-1 page 1 style): the scene's wall/sky becomes the
+   *  background of the WHOLE page — the drawing stays pinned where it was, and
+   *  the title + speech bubble float inside the very same room */
+  const immersive =
+    screen.type === 'explain' &&
+    screen.speaker === 'robot' &&
+    !!screen.scene &&
+    BACKDROP_KINDS.has(screen.scene.kind);
 
   const canAdvance = useMemo(() => {
     if (screen.type === 'build') return doneTasks.current.has(`${lesson.id}:${step}`);
@@ -280,9 +296,24 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     !isLast && screen.type === 'explain' && screen.nextLabel ? tx(screen.nextLabel) : t('lesson.next');
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 flex flex-col">
+    <div className="relative min-h-[100dvh] bg-slate-50 flex flex-col">
+      {/* immersive room backdrop — ONE continuous wall/sky gradient behind the
+          whole page (header, speech, furniture, footer), so the explanations
+          live inside the room instead of sitting on a flat page above a card */}
+      {immersive && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{ background: 'linear-gradient(to bottom, #e0f2fe 0%, #f0f9ff 56%, #fef9c3 100%)' }}
+        />
+      )}
+
       {/* header */}
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 py-3 flex items-center gap-3">
+      <header
+        className={`sticky top-0 z-20 border-b px-4 py-3 flex items-center gap-3 backdrop-blur ${
+          immersive ? 'border-white/90 bg-white/65' : 'bg-white/95'
+        }`}
+      >
         <Button variant="ghost" size="icon" aria-label={t('lesson.back')} onClick={() => navigate({ screen: 'learn' })}>
           <ArrowLeft className="w-6 h-6 cq-flip-rtl" />
         </Button>
@@ -299,10 +330,14 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
       </header>
 
       {/* content — a flex column so explain pages can pin their scene to the bottom */}
-      <main className="flex-1 overflow-y-auto cq-scroll px-4 py-5 max-w-2xl w-full mx-auto flex flex-col">{body()}</main>
+      <main className="relative z-10 flex-1 overflow-y-auto cq-scroll px-4 py-5 max-w-2xl w-full mx-auto flex flex-col">{body()}</main>
 
       {/* footer nav */}
-      <footer className="border-t bg-white px-4 py-3">
+      <footer
+        className={`border-t px-4 py-3 ${
+          immersive ? 'relative z-20 border-white/90 bg-white/70 backdrop-blur' : 'bg-white'
+        }`}
+      >
         <div className={`max-w-2xl mx-auto ${gatePossible ? 'min-h-[76px]' : ''}`}>
           {listenCount ? (
             <p className="mb-2 text-center text-[13px] font-extrabold text-teal-600" aria-live="polite">
