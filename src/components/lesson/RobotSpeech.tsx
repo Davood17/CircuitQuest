@@ -98,7 +98,7 @@ export function RobotSpeech({ text, onDone }: { text: string; onDone?: () => voi
           {cur.map((lineText, i) => (
             <p
               key={`${idx}-${i}`}
-              className={`text-[15px] leading-6 sm:text-[16.5px] sm:leading-7 font-bold text-slate-700 ${motion ? 'cq-pop' : ''}`}
+              className={`text-[14px] leading-[22px] sm:text-[15.5px] sm:leading-[26px] font-bold text-slate-700 ${motion ? 'cq-pop' : ''}`}
               style={motion && i > 0 ? { animationDelay: `${i * 110}ms` } : undefined}
             >
               {lineText}

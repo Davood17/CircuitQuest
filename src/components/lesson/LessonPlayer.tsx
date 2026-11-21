@@ -87,15 +87,18 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     switch (screen.type) {
       case 'explain':
         if (screen.speaker === 'robot') {
-          // the teacher robot speaks the body inside a speech bubble
+          // the teacher robot speaks the body inside a speech bubble.
+          // The scene is PINNED to the bottom of the page (mt-auto inside a
+          // full-height flex column): the speech bubble may grow and shrink
+          // between dialogue chunks, but the picture below keeps a fixed
+          // resting place — it never jumps up and down with the text anymore.
           return (
-            <div className="space-y-4">
+            <div className="flex flex-1 flex-col gap-4">
               <div>
                 <h2 className="text-2xl font-extrabold leading-snug">{tx(screen.title)}</h2>
                 <span aria-hidden className="mt-1.5 block h-1.5 w-20 rounded-full bg-gradient-to-r from-teal-400 via-amber-300 to-teal-400" />
               </div>
               <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} />
-              {screen.scene && <Scene spec={screen.scene} animated={motion} onTaskDone={() => setTaskDone(true)} />}
               {screen.tip && (
                 <div className="rounded-2xl bg-amber-50 border-2 border-amber-200 p-3.5 text-sm font-bold text-amber-900 shadow-sm">
                   💡 {tx(screen.tip)}
@@ -107,6 +110,11 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                     <span className="inline-flex w-8 h-8 rounded-full bg-teal-600 text-white items-center justify-center me-2 align-middle">🤔</span>
                     {tx(screen.ask)}
                   </p>
+                </div>
+              )}
+              {screen.scene && (
+                <div className="mt-auto">
+                  <Scene spec={screen.scene} animated={motion} onTaskDone={() => setTaskDone(true)} />
                 </div>
               )}
             </div>
@@ -238,6 +246,9 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   // what the child still has to do before the next button unlocks
   const gateHint = !canAdvance && !isLast ? (!speechDone && needsSpeech ? t('lesson.gateListen') : t('lesson.gateTask')) : null;
+  // a gate row WILL exist on this screen (even before/after it is hinted) — reserve
+  // its height so the footer never resizes and the pinned scene never shifts
+  const gatePossible = !isLast && (needsSpeech || isChallenge);
   const nextText =
     !isLast && screen.type === 'explain' && screen.nextLabel ? tx(screen.nextLabel) : t('lesson.next');
 
@@ -260,12 +271,12 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
         </div>
       </header>
 
-      {/* content */}
-      <main className="flex-1 overflow-y-auto cq-scroll px-4 py-5 max-w-2xl w-full mx-auto">{body()}</main>
+      {/* content — a flex column so explain pages can pin their scene to the bottom */}
+      <main className="flex-1 overflow-y-auto cq-scroll px-4 py-5 max-w-2xl w-full mx-auto flex flex-col">{body()}</main>
 
       {/* footer nav */}
       <footer className="border-t bg-white px-4 py-3">
-        <div className="max-w-2xl mx-auto">
+        <div className={`max-w-2xl mx-auto ${gatePossible ? 'min-h-[76px]' : ''}`}>
           {gateHint && (
             <p className="mb-2 text-center text-[13px] font-extrabold text-teal-600 animate-pulse" aria-live="polite">
               🔒 {gateHint}
