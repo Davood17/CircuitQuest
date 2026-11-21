@@ -33,12 +33,6 @@ interface ProgressState {
   completedProjects: Record<string, { completedAt: number }>;
   solvedChallenges: Record<string, { completedAt: number; hintsUsed: number }>;
   badges: Record<string, number>; // badgeId → earnedAt
-  /** discovery mission (l0-1): `${lessonId}:${deviceId}` → discoveredAt */
-  discoveries: Record<string, number>;
-  /** discovery mission XP awarded once per lessonId */
-  discoveryXp: Record<string, number>;
-  /** per-device-page part finds (Task 16): `${lessonId}:${deviceId}:${partId}` → foundAt */
-  devicePartFinds: Record<string, number>;
   streak: StreakState;
   stats: { mistakes: number; hintsUsed: number; seconds: number; simRuns: number; perfectQuizzes: number };
   adaptive: Record<string, { perfScore: number; struggle: number }>;
@@ -56,12 +50,6 @@ interface ProgressState {
   recordTime: (seconds: number) => void;
   markActiveDay: () => void;
   awardBadge: (badgeId: string) => void;
-  /** mark a device as explored; returns true if it was the first time */
-  discoverDevice: (lessonId: string, deviceId: string) => boolean;
-  /** award the discovery-mission XP once per lesson; returns true if awarded now */
-  awardDiscoveryXp: (lessonId: string, xp: number) => boolean;
-  /** mark a device-page part as found; returns true if it was the first time */
-  findDevicePart: (lessonId: string, deviceId: string, partId: string) => boolean;
   updateAdaptive: (lessonId: string, perfScore: number, struggled: boolean) => void;
   resetAll: () => void;
   importJson: (json: string) => boolean;
@@ -89,9 +77,6 @@ const initial = {
   completedProjects: {},
   solvedChallenges: {},
   badges: {},
-  discoveries: {},
-  discoveryXp: {},
-  devicePartFinds: {},
   streak: { current: 0, longest: 0, lastActiveDay: '' },
   stats: { mistakes: 0, hintsUsed: 0, seconds: 0, simRuns: 0, perfectQuizzes: 0 },
   adaptive: {},
@@ -175,26 +160,6 @@ export const useProgress = create<ProgressState>()(
         if (get().badges[badgeId]) return;
         set((s) => ({ badges: { ...s.badges, [badgeId]: Date.now() } }));
       },
-      discoverDevice: (lessonId, deviceId) => {
-        const key = `${lessonId}:${deviceId}`;
-        if (get().discoveries[key]) return false;
-        set((s) => ({ discoveries: { ...s.discoveries, [key]: Date.now() } }));
-        get().markActiveDay();
-        return true;
-      },
-      awardDiscoveryXp: (lessonId, xp) => {
-        if (get().discoveryXp[lessonId]) return false;
-        set((s) => ({ discoveryXp: { ...s.discoveryXp, [lessonId]: Date.now() }, xp: s.xp + xp }));
-        checkBadges(set, get);
-        return true;
-      },
-      findDevicePart: (lessonId, deviceId, partId) => {
-        const key = `${lessonId}:${deviceId}:${partId}`;
-        if (get().devicePartFinds[key]) return false;
-        set((s) => ({ devicePartFinds: { ...s.devicePartFinds, [key]: Date.now() } }));
-        get().markActiveDay();
-        return true;
-      },
       updateAdaptive: (lessonId, perfScore, struggled) =>
         set((s) => {
           const a = s.adaptive[lessonId] ?? { perfScore: 0, struggle: 0 };
@@ -240,7 +205,6 @@ function checkBadges(set: SetFn, get: GetFn) {
     tier: tierFromXp(s.xp),
     hasBadge: (id: string) => Boolean(s.badges[id]),
     lessonDone: (id: string) => Boolean(s.completedLessons[id]),
-    discoveryMissions: Object.keys(s.discoveryXp).length,
   };
   for (const badge of BADGES as BadgeDef[]) {
     if (!s.badges[badge.id] && badge.rule(ctx)) {

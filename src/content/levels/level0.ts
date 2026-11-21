@@ -57,146 +57,130 @@ const diagnoseGap = doc(
  * and ONLY THEN the first circuit build, concepts after.
  */
 export const LEVEL0_LESSONS: Lesson[] = [
-  // ---------------------------------------------------------- 1. electronics (robot script — do not touch)
-  // redesigned per the user's exact script — the teacher ROBOT speaks every page:
-  // discovery → secret: the electrons (+ wire animation) → the magic road: circuit
-  // → the five circuit heroes (+ sounds) → electronics = commanding electrons
-  // → the competition quiz → junior-engineer medal
+  // ------------------------------------------------ 1. electronics (redesigned)
+  // «فصل اول: کاوشگر الکترونیک» — new-format lesson (user spec, Nov 2026):
+  // calm intro page (no extra animation) → simple-vs-smart challenge →
+  // the toy-hospital build challenge → problem-based 3-question MCQ quiz →
+  // the Smart Electronics Explorer medal. The next button stays locked until
+  // the child has heard the whole teacher speech AND finished each mission.
   {
     id: 'l0-1',
     levelId: 'level0',
-    title: L('What is electronics? (Commanding the electrons)', 'الکترونیک چیست؟ (فرماندهی به الکترون‌ها)'),
+    title: L('What is electronics? (Commanding the magic particles)', 'الکترونیک چیست؟ (فرماندهی به ذرات جادویی)'),
     emoji: '⚡',
     difficulty: 1,
     minutes: 8,
     objectives: [
-      L('Meet the electrons and electric current', 'الکترون‌ها و جریان برق را بشناس'),
-      L('Understand what a circuit is and when the lamp lights up', 'بفهم مدار چیست و چراغ کِی روشن می‌شود'),
-      L('Know the five circuit heroes and their jobs', 'پنج قهرمان مدار و کارشان را بشناس'),
-      L('Understand that electronics means giving commands to the electrons', 'بفهم الکترونیک یعنی فرمان دادن به الکترون‌ها'),
+      L('Know the difference between simple electricity and smart electronics', 'فرقِ برقِ ساده و الکترونیکِ هوشمند را بدانی'),
+      L('Give a robot commands: its light color and its speed', 'به یک ربات فرمان بدهی: رنگ نورش و سرعتش را'),
+      L('See why a device needs an electronic brain to be controllable', 'بفهمی یک وسیله برای فرمان‌پذیری به مغز الکترونیکی نیاز دارد'),
+      L('Rebuild a toy car with battery, brain, wires and motor', 'ماشین اسباب‌بازی را با باتری، مغز، سیم و موتور بسازی'),
     ],
     screens: [
       {
-        // interactive discovery: 5 everyday devices on a PCB trace,
-        // tap to open an exploded view with tap-able parts (see DeviceDiscovery)
-        type: 'discovery',
-      },
-      {
-        // page 2 — the big secret: the electrons
+        // page 1 — welcome to the world of commanding (conceptual, calm:
+        // NO interactive animation on purpose, so the child focuses on the idea)
         type: 'explain',
         speaker: 'robot',
-        title: L('What is the big secret of electric devices? 🕵️‍♂️✨', 'راز بزرگ وسایل برقی چیه؟ 🕵️‍♂️✨'),
+        title: L('Welcome to the world of commanding! 👋', 'آشنایی با دنیای فرماندهی! 👋'),
         body: L(
-          'My dear curious kids! On the previous page you saw that inside all of these devices there are wires and tiny little parts. But what do you think moves inside these wires that makes the toys work?\n\nThe big secret is: the electrons! ⚡\n\nElectrons are like tiny, tiny and very energetic friends that eyes cannot see at all. They hold each other\u2019s hands and run really fast inside the wires! When these little workers move together, we call it electric current.',
-          'بچه‌های عزیز و کنجکاو من! توی صفحهٔ قبل دیدید که داخل همهٔ این وسایل، سیم‌ها و قطعه‌های کوچولویی وجود داره. اما فکر می‌کنید چه چیزی داخل این سیم‌ها حرکت می‌کنه که باعث میشه اسباب‌بازی‌ها کار کنند؟\n\nراز بزرگ اینه: الکترون‌ها! ⚡\n\nالکترون‌ها مثل دوست‌های ریزه‌میزه و بسیار پرانرژی هستند که اصلاً با چشم دیده نمیشن. اون‌ها دست همدیگه رو می‌گیرند و توی سیم‌ها تندتند میدوند! وقتی این کارگرهای کوچولو با هم حرکت می‌کنند، بهشون میگیم جریان برق.',
+          'Hello, hero explorer! Welcome to the first step of our amazing journey!\n\nHave you ever wondered how, when you press a button on the game controller, the car on the TV moves left and right exactly the way you want? Or how a toy can talk?\n\nThe secret behind all of this magic is one word: electronics!\n\nElectronics means learning the language of commanding electricity! It means we do not just switch electricity on and off — we tell it exactly what job to do for us.',
+          'سلام کاوشگر قهرمان! خوش اومدی به اولین گام از سفر شگفت‌انگیزمون!\n\nتا حالا فکر کردی چطوری وقتی دکمهٔ دستهٔ بازی رو فشار میدی، ماشین توی تلویزیون دقیقاً همون‌طوری که تو می‌خوای به چپ و راست می‌ره؟ یا چطوری یک اسباب‌بازی می‌تونه حرف بزنه؟\n\nراز همهٔ این جادوها یک کلمه است: «الکترونیک»!\n\nالکترونیک یعنی یاد گرفتن زبانِ فرماندهی به جریان برق! یعنی ما فقط برق رو روشن و خاموش نمی‌کنیم، بلکه بهش دستور می‌دیم دقیقاً چه کاری برای ما انجام بده.',
         ),
-        scene: { kind: 'electron-wire' },
+        scene: { kind: 'command-intro' },
+        nextLabel: L('Enter the challenge! ⚡', 'ورود به چالش! ⚡'),
       },
       {
-        // page 3 — the magic road: the electric circuit
+        // page 2 — challenge: simple electricity vs smart electronics
         type: 'explain',
         speaker: 'robot',
-        title: L('The magic road of the electrons! 🛣️💡', 'جادهٔ جادویی الکترون‌ها! 🛣️💡'),
+        title: L('Simple electricity vs. smart electronics 🤖', 'چالش «برق ساده» در برابر «الکترونیک هوشمند» 🤖'),
         body: L(
-          'Our energetic electrons need a special round road to be able to work — we call it an electric circuit.\n\nThis road is just like a toy-car track or a closed circle: the electrons start running from one side, pass through the lamp or the motor, and come right back to where they started!\n\nBut if this road gets cut somewhere (for example a wire breaks or the switch turns off), the electrons stop in their place and the lamp goes off!',
-          'الکترون‌های پرانرژی ما برای این‌که بتونند کار کنند، به یک جادهٔ مخصوص و گرد نیاز دارند که بهش میگیم مدار الکتریکی.\n\nاین جاده درست مثل پیست ماشین‌بازی یا یک دایرهٔ بسته است؛ الکترون‌ها از یک طرف شروع به دویدن می‌کنند، از وسط چراغ یا موتور رد میشن و دوباره برمی‌گردند به جای اولشون!\n\nحالا اگر این جاده از یک جا قطع بشه (مثلاً سیم ببره یا کلید خاموش بشه)، الکترون‌ها جاشون متوقف میشه و چراغ خاموش میشه!',
+          'What is the difference between simple electricity and electronics? Come and test it yourself in this challenge!\n\nOn the right side is simple electricity; can you make the lamp sing a song or glow dimly for us?\n\nNow go to the left side and set the robot so it dances with light and moves gently at the same time!',
+          'فرقِ برق ساده با الکترونیک چیه؟ بیا توی این چالش خودت امتحان کنی!\n\nسمت راست برقِ ساده است؛ ببین می‌تونی کاری کنی لامپ برامون آهنگ بزنه یا کم‌نور بشه؟\n\nحالا برو سمت چپ و ربات رو جوری تنظیم کن که هم‌زمان با رقص نور، آروم حرکت کنه!',
         ),
-        scene: { kind: 'circuit-road' },
+        scene: { kind: 'simple-vs-smart' },
       },
       {
-        // page 4 — the little heroes of the circuit
+        // page 3 — the toy hospital: rebuild the RC car
         type: 'explain',
         speaker: 'robot',
-        title: L('Meet the little heroes of the circuit! 🦸‍♂️🦸‍♀️', 'با قهرمان‌های کوچک مدار آشنا بشید! 🦸‍♂️🦸‍♀️'),
+        title: L('The toy surgery room 🏥🚗', 'چالش اتاق تشریح اسباب‌بازی 🏥🚗'),
         body: L(
-          'On this magic road we have a few kind heroes, and each one does a special job:\n\n🔋 Battery (the energy station): like a kind mom, it gives the electrons energy so they can run!\n🔌 Wires (the road): they are the path the electrons walk on.\n🔴 Switch (the traffic officer): it opens and closes the road so the current can flow or stop.\n💡 LED lamp (the light hero): it takes the electrons\u2019 energy and turns it into beautiful light!\n⚙️ Motor (the motion hero): it takes the electrons\u2019 energy and spins the wheels or the fan.',
-          'توی این جادهٔ جادویی، چند تا قهرمان مهربون داریم که هر کدوم یک کار ویژه انجام میدن:\n\n🔋 باتری (ایستگاه انرژی): مثل یک مامان مهربون به الکترون‌ها انرژی میده تا بتونند بدوند!\n🔌 سیم‌ها (جاده): مسیر راه‌رفتن الکترون‌ها هستند.\n🔴 کلید (پلیس راهنما): جاده رو باز و بسته می‌کنه تا جریان راه بیفته یا متوقف بشه.\n💡 لامپ LED (قهرمان نور): انرژی الکترون‌ها رو می‌گیره و به نور قشنگ تبدیل می‌کنه!\n⚙️ موتور (قهرمان حرکت): انرژی الکترون‌ها رو می‌گیره و چرخ‌ها یا پنکه رو می‌چرخونه.',
+          'This remote-control car has gone dead and does not work!\n\nIf we only connect the battery to it, it becomes a simple motor: its wheels spin non-stop and the car goes out of control!\n\nSo that we can steer it left and right with the game controller, it needs an electronic brain. Put the parts in their right places so the car becomes smart!',
+          'این ماشین کنترلی خاموش شده و کار نمی‌کنه!\n\nاگر فقط باتری بهش وصل کنیم، مثل یک موتور ساده فقط چرخ‌هاش بی‌وقفه می‌چرخند و از کنترل خارج میشه!\n\nبرای این‌که بتونیم با دستهٔ بازی بهش فرمان چپ و راست بدیم، به مغز الکترونیکی نیاز داریم. قطعات رو درست سر جاشون بگذار تا ماشین هوشمند بشه!',
         ),
-        scene: { kind: 'hero-team' },
+        scene: { kind: 'toy-hospital' },
       },
       {
-        // page 5 — the magic of control: what is electronics?
-        type: 'explain',
+        // page 4 — the quiz room: 3 problem-based multiple-choice questions
+        type: 'quiz',
+        title: L('The Explorer Quiz Room 🏆', 'اتاق آزمون و چالش سنجش دانش 🏆'),
+        body: L(
+          'Now it is quiz time, explorer! Answer the three questions and collect your shining stars!',
+          'حالا وقتِ آزمون کاوشگره! به سه سؤال جواب بده و ستاره‌های درخشان رو جمع کن!',
+        ),
         speaker: 'robot',
-        title: L('The magic of control; what does electronics mean? 🧠✨', 'جادوی کنترل؛ الکترونیک یعنی چه؟ 🧠✨'),
-        body: L(
-          'Well, my clever kids! Now that we know what electricity is, what is electronics?\n\nElectronics means giving commands to the electrons! Telling them when to run, how slow or how fast to go, when to make the lamp blink, or when to play a beautiful song!\n\nWhen we can control the movement of the electrons, we can build smart robots, mobile phones and computer games!',
-          'خب بچه‌های باهوش من! حالا که فهمیدیم برق چیه، الکترونیک یعنی چی؟\n\nالکترونیک یعنی فرمان دادن به الکترون‌ها! یعنی بهشون بگیم کِی بدوند، چقدر آروم یا تند بروند، کِی چراغ رو چشمک‌زن کنند یا کِی یک آهنگ قشنگ بزنند!\n\nوقتی ما بتونیم این حرکت الکترون‌ها رو کنترل کنیم، می‌تونیم ربات‌های هوشمند، گوشی‌های موبایل و بازی‌های کامپیوتری بسازیم!',
-        ),
-        scene: { kind: 'command-center' },
-        tip: L('Electronics = giving smart commands to the electrons!', 'الکترونیک = فرماندهیِ هوشمند روی الکترون‌ها!'),
       },
-      {
-        // end-of-lesson mini-build
-        type: 'build',
-        title: L('Mini-build: your first light! 💡', 'تمرین ساختنی: اولین نورت! 💡'),
-        body: L('Now it is YOUR turn, engineer! The three heroes are waiting on the workbench: the battery, the guard resistor and the LED. Connect them with wires and light up your very first light!', 'حالا نوبت توئه مهندس! سه قهرمان روی میز کار منتظرت هستند: باتری، مقاومتِ نگهبان و LED. آن‌ها را با سیم به هم وصل کن و اولین نورت را روشن کن!'),
-        task: {
-          brief: L('Wire the loop so the LED lights up safely.', 'حلقه را سیم‌کشی کن تا LED روشن شود.'),
-          goal: g.and(g.ledOn('led1'), g.ledCurrentSafe('led1'), g.noShort()),
-          startCircuit: doc(
-            [
-              c('battery', 'b1', { params: { voltage: 3 }, x: 130, y: 190 }),
-              c('resistor', 'r1', { params: { resistance: 220 }, x: 370, y: 190 }),
-              c('led', 'led1', { x: 580, y: 190 }),
-            ],
-            [
-            ],
-          ),
-          allowed: ['battery', 'resistor', 'led'],
-          hints: [
-            L('Start from the + side of the battery and run a wire to the first leg of the resistor.', 'از پایهٔ + باتری شروع کن و یک سیم تا پایهٔ اول مقاومت بکش.'),
-            L('Then: resistor → the long leg of the LED, and the short leg back to − of the battery.', 'بعدش: مقاومت → پایهٔ بلند LED، و پایهٔ کوتاه → برمی‌گردی به − باتری.'),
-          ],
-        },
-      },
-      { type: 'quiz' },
       { type: 'reward', scene: { kind: 'medal-party' } },
     ],
     quiz: [
       {
-        // the end-of-lesson competition — exactly the user's question
+        // q1 — conceptual
         type: 'mcq',
-        prompt: L('Which part was like a police officer, opening and closing the road of the electrons?', 'کدوم قطعه بود که مثل پلیس، جادهٔ الکترون‌ها رو باز و بسته می‌کرد؟'),
-        options: [L('🔴 The switch', '🔴 کلید'), L('🔋 The battery', '🔋 باتری'), L('💡 The LED lamp', '💡 لامپ LED')],
+        prompt: L(
+          'What is the MAIN difference between «electronics» and «ordinary electricity»?',
+          'تفاوت اصلی «الکترونیک» با «برق معمولی» در چیست؟',
+        ),
+        options: [
+          L('🔴 Electronics means giving electricity commands and programs so it does many different jobs.', '🔴 الکترونیک یعنی به جریان برق دستور و برنامه می‌دیم تا کارهای مختلف انجام بده.'),
+          L('🟡 Electronics only means turning on very big lamps.', '🟡 الکترونیک فقط یعنی روشن کردن لامپ‌های خیلی بزرگ.'),
+          L('🔵 There is no difference; both mean the same thing.', '🔵 هیچ تفاوتی ندارند و هر دو یک معنی را می‌دهند.'),
+        ],
         answer: 0,
         explanation: L(
-          'Bravo, little engineer! The switch opens and closes the road of the electrons — that is exactly how lamps turn on and off! 🏅',
-          'آفرین مهندس کوچک! کلید مثل پلیس راهنما جادهٔ الکترون‌ها رو باز و بسته می‌کنه؛ همین باعث میشه چراغ روشن و خاموش بشه! 🏅',
+          'Exactly! In electronics we do not just switch the current on and off — we COMMAND it: play a song, glow dimly, or drive a robot!',
+          'دقیقاً! در الکترونیک فقط جریان برق رو روشن و خاموش نمی‌کنیم؛ بهش فرمان می‌دیم: آهنگ بزنه، کم‌نور بشه یا یک ربات رو حرکت بده!',
         ),
       },
-
       {
-        type: 'trueFalse',
-        prompt: L('Must the electrons have a closed, round road (a circuit) to be able to run and work?', 'آیا الکترون‌ها برای این‌که بتوانند بدوند و کار کنند، به یک جادهٔ بسته و گرد (مدار) نیاز دارند؟'),
-        answer: true,
-        explanation: L('Yes! The electrons only run on a complete, closed road. If the road breaks, they all stop and the lamp goes off!', 'آره! الکترون‌ها فقط روی جادهٔ کامل و بسته می‌دوند؛ اگر جاده از جایی قطع شود، همه می‌ایستند و چراغ خاموش می‌شود!'),
-      },
-      {
-        type: 'identify',
-        prompt: L('Who is this kind hero — the energy station that feeds the electrons?', 'این قهرمان مهربان کیست؟ ایستگاه انرژی که به الکترون‌ها انرژی می‌دهد!'),
-        partType: 'battery',
-        options: [
-          L('The battery', 'باتری'),
-          L('The switch', 'کلید'),
-          L('The LED lamp', 'لامپ LED'),
-        ],
-        answer: 0,
-        explanation: L('Great job! This is our battery: the energy station that, like a kind mom, gives the electrons power so they can run!', 'آفرین! این باتری ماست؛ ایستگاه انرژی که مثل یک مامان مهربون به الکترون‌ها انرژی میده تا بدوند!'),
-      },
-      {
+        // q2 — analytical
         type: 'mcq',
-        prompt: L('So what does «electronics» mean?', 'خب، «الکترونیک» یعنی چه؟'),
+        prompt: L(
+          'A toy robot turns on, but when we press its control buttons it shows no reaction at all! Which part do you think is broken?',
+          'یک ربات اسباب‌بازی روشن می‌شود اما وقتی دکمه‌های کنترلی را می‌زنیم هیچ واکنشی نشان نمی‌دهد! فکر می‌کنی کدام بخشش مشکل دارد؟',
+        ),
         options: [
-          L('🧠 Commanding the electrons: telling them when and how to run', '🧠 فرمان دادن به الکترون‌ها: بگیم کِی و چطور بدوند'),
-          L('🎨 Painting the wires in pretty colors', '🎨 رنگ کردن سیم‌ها با رنگ‌های قشنگ'),
-          L('🛏️ Putting the electrons to sleep', '🛏️ خواباندن الکترون‌ها'),
+          L('🔴 The battery wires have come off.', '🔴 سیم‌های باتری کنده شده‌اند.'),
+          L('🟡 Its commanding / electronic brain does not work.', '🟡 بخش فرمان‌دهی و الکترونیکی (مغز) دستگاه کار نمی‌کند.'),
+          L('🔵 The plastic body of the robot is broken.', '🔵 بدنهٔ پلاستیکی ربات شکسته است.'),
         ],
-        answer: 0,
-        explanation: L('Exactly, my clever engineer! Electronics means giving smart commands to the electrons so they blink lamps, play songs and move robots!', 'دقیقاً مهندس باهوش من! الکترونیک یعنی فرماندهی هوشمند روی الکترون‌ها تا چراغ‌ها را چشمک بزنند، آهنگ بزنند و ربات‌ها را حرکت بدهند!'),
+        answer: 1,
+        explanation: L(
+          'Good thinking! The robot turns on, so the battery and its wires are fine — but the commands never reach it. So the electronic brain, the part that gives commands, is the problem!',
+          'چه تحلیل خوبی! ربات روشن می‌شود یعنی باتری و سیم‌هایش سالم‌اند — اما فرمان‌ها به گوشش نمی‌رسند؛ پس مغزِ فرمان‌دهیِ دستگاه مشکل دارد!',
+        ),
+      },
+      {
+        // q3 — practical
+        type: 'mcq',
+        prompt: L(
+          'Which of the following devices uses the science of «electronics» to control and become smart?',
+          'در کدام‌یک از وسایل زیر از «علم الکترونیک» برای کنترل و هوشمندسازی استفاده شده است؟',
+        ),
+        options: [
+          L('🔴 A simple flashlight that only has an on/off button.', '🔴 یک چراغ‌قوهٔ ساده که فقط یک دکمهٔ روشن/خاموش دارد.'),
+          L('🟡 A wooden spoon.', '🟡 یک قاشق غذاخوری چوبی.'),
+          L('🔵 A mobile phone or a tablet.', '🔵 یک گوشی تلفن همراه یا تبلت.'),
+        ],
+        answer: 2,
+        explanation: L(
+          'Yes! A phone or tablet sends thousands of commands to the electric current: light, sound, pictures and games — and that is exactly what electronics means!',
+          'آره! گوشی و تبلت هزاران فرمان به جریان برق می‌دهند: نور، صدا، تصویر و بازی — و این دقیقاً یعنی الکترونیک!',
+        ),
       },
     ],
-    rewardBadge: L('Junior Engineer Honor Medal', 'مدال افتخارِ «مهندس کوچک»'),
+    rewardBadge: L('Smart Electronics Explorer Medal', 'مدال «کاوشگر هوشمند الکترونیک»'),
     unlockLessonIds: [],
   },
 

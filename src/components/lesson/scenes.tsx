@@ -13,6 +13,9 @@ import { useI18n, txText, type LocaleText } from '@/lib/i18n';
 import { useSettings } from '@/stores/settings';
 import { sfx } from '@/lib/sfx';
 import { L } from '@/content/helpers';
+import { CommandIntroScene, SimpleVsSmartScene, ToyHospitalScene } from './challenge-scenes';
+
+export { CHALLENGE_KINDS } from './challenge-scenes';
 import {
   AmpereDetectiveScene,
   BatteryBackpackScene,
@@ -102,21 +105,6 @@ const Label = ({
     </text>
   );
 };
-
-const dots = (cx: number, cy: number, r: number, n: number, speed = 1, color = '#f59e0b') => (
-  <g>
-    {Array.from({ length: n }).map((_, i) => (
-      <circle key={i} r={4} fill={color}>
-        <animateMotion
-          dur={`${Math.max(1.2, 4 / speed)}s`}
-          repeatCount="indefinite"
-          begin={`${(i / n) * (4 / speed)}s`}
-          path={`M ${cx - r} ${cy} A ${r} ${r} 0 1 1 ${cx + r} ${cy} A ${r} ${r} 0 1 1 ${cx - r} ${cy}`}
-        />
-      </circle>
-    ))}
-  </g>
-);
 
 /** anim captions arrive as English prop strings — map them to bilingual pairs */
 
@@ -434,387 +422,6 @@ const CuteElectronFace = ({ r = 13 }: { r?: number }) => (
   </g>
 );
 
-/** slide 2 — smiling electrons inside a transparent wire; tap to make them run */
-function ElectronWireScene() {
-  const [running, setRunning] = useState(false);
-  const { lang } = useI18n();
-  const idleXs = [124, 181, 238, 295, 352, 409, 466, 523];
-  const n = 8;
-  const dur = 2.8;
-  const toggle = () => {
-    setRunning((r) => !r);
-    if (running) sfx.pop();
-    else sfx.whoosh();
-  };
-  return (
-    <Frame bg="#f0f9ff">
-      <Tag x={320} y={40} color="#0284c7" text={L('the tiny workers: electrons! 🔵', 'کارگرهای ریزه: الکترون‌ها! 🔵')} />
-
-      {/* the transparent wire */}
-      <rect x={78} y={138} width={484} height={64} rx={32} fill="#e0f2fe" opacity={0.6} stroke="#7dd3fc" strokeWidth={3} />
-      <rect x={92} y={152} width={456} height={36} rx={18} fill="url(#ew-copper)" opacity={0.92} />
-      <path d="M 104 150 q 70 -9 140 -6" stroke="#fff" strokeWidth={5} strokeLinecap="round" opacity={0.65} fill="none" />
-      {/* end terminals */}
-      <circle cx={78} cy={170} r={11} fill="#94a3b8" stroke="#64748b" strokeWidth={2} />
-      <circle cx={562} cy={170} r={11} fill="#94a3b8" stroke="#64748b" strokeWidth={2} />
-
-      {/* the electrons */}
-      {running ? (
-        <g>
-          {Array.from({ length: n }).map((_, i) => (
-            <g key={`run-${i}`}>
-              <animateMotion dur={`${dur}s`} begin={`${-(i / n) * dur}s`} repeatCount="indefinite" path="M 100 170 H 540" />
-              <CuteElectronFace />
-            </g>
-          ))}
-        </g>
-      ) : (
-        <g>
-          {idleXs.map((x, i) => (
-            <g key={`idle-${i}`} transform={`translate(${x} 170)`}>
-              <g>
-                <animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur={`${1.4 + i * 0.12}s`} repeatCount="indefinite" />
-                <CuteElectronFace />
-              </g>
-            </g>
-          ))}
-        </g>
-      )}
-
-      {/* tap target over the wire */}
-      <rect x={78} y={128} width={484} height={84} fill="transparent" onClick={toggle} style={{ cursor: 'pointer' }} />
-
-      {running && (
-        <Label x={320} y={252} size={15} color="#0369a1" text={L('they hold hands and run together = electric current! ⚡', 'دست همدیگه رو می‌گیرند و تندتند میدوند = جریان برق! ⚡')} />
-      )}
-
-      {/* pill button */}
-      <g onClick={toggle} style={{ cursor: 'pointer' }} role="button">
-        <rect x={140} y={286} width={360} height={44} rx={22} fill={running ? '#0d9488' : '#f59e0b'} />
-        <text x={320} y={313} textAnchor="middle" fontSize={14.5} fontWeight={700} fill="#fff">
-          {txText(running ? L('stop the little workers! ✋', 'کارگرهای ریزه رو نگه دار! ✋') : L('tap the wire to see the electrons run! 👆', 'بزن روی سیم تا حرکت الکترون‌ها رو ببینی! 👆'), lang)}
-        </text>
-      </g>
-
-      <defs>
-        <linearGradient id="ew-copper" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f7b06b" />
-          <stop offset="1" stopColor="#c96a2b" />
-        </linearGradient>
-      </defs>
-    </Frame>
-  );
-}
-
-/** slide 3 — the magic round road (circuit): connect the bridge, light the lamp */
-function CircuitRoadScene() {
-  const motion = useSettings((s) => s.motion);
-  const { lang } = useI18n();
-  const [connected, setConnected] = useState(false);
-  // ⚠️ sweep flag MUST be 0 here: with `A 215 112 0 1 1` the ellipse center
-  // resolves to (320, −25.5) — above the canvas — so the electrons ran
-  // off-screen instead of around the road. With `1 0` the center is
-  // (320, 185.1), the exact ellipse of the drawn road, and the closing Z
-  // line runs along the bridge. Verified with the SVG arc-to-center formula.
-  const loop = 'M 246.5 79.8 A 215 112 0 1 0 393.5 79.8 Z';
-  const toggle = () => {
-    const next = !connected;
-    setConnected(next);
-    sfx.click();
-    if (next) window.setTimeout(() => sfx.sparkle(), 380);
-  };
-  return (
-    <Frame bg="#f7fee7">
-      <Tag x={320} y={36} color="#16a34a" text={connected ? L('circuit complete — the electrons run around! ⚡', 'مدار کامل شد؛ الکترون‌ها دور مدار میدوند! ⚡') : L('the magic road: the circuit 🛣️', 'جادهٔ جادویی: مدار 🛣️')} />
-
-      {/* lawn */}
-      <ellipse cx={320} cy={190} rx={248} ry={142} fill="#ecfdf5" />
-      <circle cx={80} cy={70} r={13} fill="#bbf7d0" />
-      <circle cx={560} cy={70} r={13} fill="#bbf7d0" />
-
-      {/* the round road with a gap at the top */}
-      <path d="M 393.5 79.8 A 215 112 0 1 1 246.5 79.8" fill="none" stroke="#22c55e" strokeWidth={26} strokeLinecap="round" />
-      <path d="M 393.5 79.8 A 215 112 0 1 1 246.5 79.8" fill="none" stroke="#ffffff" strokeWidth={3} strokeDasharray="16 13" opacity={0.85} />
-
-      {/* bridge posts */}
-      <circle cx={246.5} cy={79.8} r={9} fill="#16a34a" stroke="#15803d" strokeWidth={2} />
-      <circle cx={393.5} cy={79.8} r={9} fill="#16a34a" stroke="#15803d" strokeWidth={2} />
-
-      {/* the bridge piece — drops into the gap when connected */}
-      <g
-        style={{
-          transformBox: 'fill-box',
-          transformOrigin: 'center',
-          transform: connected ? 'translateY(0px) rotate(0deg)' : 'translateY(-44px) rotate(-10deg)',
-          transition: motion ? 'transform 0.55s ease' : 'none',
-          opacity: connected ? 1 : 0.9,
-        }}
-      >
-        <rect x={243} y={68} width={154} height={24} rx={12} fill="#16a34a" stroke="#15803d" strokeWidth={2} />
-        <line x1={258} y1={80} x2={382} y2={80} stroke="#fff" strokeWidth={3} strokeDasharray="12 10" opacity={0.85} />
-      </g>
-
-      {/* battery — the energy station, standing on the road (left) */}
-      <g transform="translate(105 185) rotate(90)">
-        <PartVisual type="battery" params={{ voltage: 3 }} state={{}} />
-      </g>
-
-      {/* LED — the light hero (right) */}
-      {connected && (
-        <circle cx={533} cy={185} r={30} fill="#fde047" opacity={0.4}>
-          <animate attributeName="r" values="26;40;26" dur="1.6s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.45;0.15;0.45" dur="1.6s" repeatCount="indefinite" />
-        </circle>
-      )}
-      <g transform="translate(533 185)">
-        <PartVisual type="led" params={{ color: 'red' }} state={connected ? { brightness: 1, running: true } : {}} />
-      </g>
-
-      {/* electrons */}
-      {connected ? (
-        <g>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <g key={`cr-run-${i}`}>
-              <animateMotion dur="4.6s" begin={`${-(i / 6) * 4.6}s`} repeatCount="indefinite" path={loop} />
-              <CuteElectronFace r={9.5} />
-            </g>
-          ))}
-        </g>
-      ) : (
-        <g>
-          <g transform="translate(246.5 58)">
-            <CuteElectronFace r={9.5} />
-            <text x={16} y={-10} fontSize={15} fontWeight={700} fill="#0369a1">؟</text>
-          </g>
-          <g transform="translate(393.5 58)">
-            <CuteElectronFace r={9.5} />
-            <text x={-16} y={-10} fontSize={15} fontWeight={700} fill="#0369a1">؟</text>
-          </g>
-        </g>
-      )}
-
-      <Label
-        x={320}
-        y={250}
-        size={14.5}
-        color={connected ? '#0f766e' : '#475569'}
-        text={connected
-          ? L('the electrons pass through the lamp → it shines! 💡', 'الکترون‌ها از چراغ رد میشن → چراغ می‌درخشه! 💡')
-          : L('the round closed road — just like a toy-car track! 🏎️', 'جادهٔ گرد و بسته — درست مثل پیست ماشین‌بازی! 🏎️')}
-      />
-
-      {/* pill button */}
-      <g onClick={toggle} style={{ cursor: 'pointer' }} role="button">
-        <rect x={110} y={286} width={420} height={44} rx={22} fill={connected ? '#dc2626' : '#16a34a'} />
-        <text x={320} y={313} textAnchor="middle" fontSize={14.5} fontWeight={700} fill="#fff">
-          {txText(connected ? L('break the road again! ✋', 'جاده رو دوباره قطع کن! ✋') : L('connect the bridge to light the lamp! 💡', 'پل جاده رو وصل کن تا ببینی چطور چراغ روشن میشه! 💡'), lang)}
-        </text>
-      </g>
-    </Frame>
-  );
-}
-
-/** slide 4 — the five circuit heroes; tap each to hear its sound and see its job */
-function HeroTeamScene() {
-  const [active, setActive] = useState<string | null>(null);
-  const { lang } = useI18n();
-  const heroes = [
-    { id: 'battery', name: L('battery 🔋', 'باتری 🔋'), say: L('I give the electrons energy so they can run! ⚡', 'من به الکترون‌ها انرژی میدم تا بتونند بدوند! ⚡') },
-    { id: 'wire', name: L('wire 🔌', 'سیم 🔌'), say: L('I am the road the electrons run on! 🛣️', 'من جاده‌ام؛ الکترون‌ها روی من میدوند! 🛣️') },
-    { id: 'switch', name: L('switch 🔴', 'کلید 🔴'), say: L('I open and close the road, like an officer! 👮', 'من مثل پلیس راهنما جاده رو باز و بسته می‌کنم! 👮') },
-    { id: 'led', name: L('LED lamp 💡', 'لامپ LED 💡'), say: L('I turn the electrons\u2019 energy into beautiful light! ✨', 'انرژی الکترون‌ها رو به نور قشنگ تبدیل می‌کنم! ✨') },
-    { id: 'motor', name: L('motor ⚙️', 'موتور ⚙️'), say: L('I spin the wheels and the fan! 🌀', 'چرخ‌ها و پنکه رو می‌چرخونم! 🌀') },
-  ];
-  const heroSound: Record<string, () => void> = {
-    battery: sfx.powerup,
-    wire: sfx.whoosh,
-    switch: sfx.click,
-    led: sfx.sparkle,
-    motor: sfx.whirr,
-  };
-  const tap = (id: string) => {
-    setActive(id);
-    heroSound[id]?.();
-  };
-  const cx = (i: number) => 320 + (i - 2) * 124;
-  const activeHero = heroes.find((h) => h.id === active);
-
-  return (
-    <Frame bg="#fefce8">
-      <Tag x={320} y={36} color="#d97706" text={L('the amazing team of the circuit! 🦸', 'تیم شگفت‌انگیز مدار! 🦸')} />
-
-      {heroes.map((h, i) => (
-        <g key={h.id} transform={`translate(${cx(i)} 0)`} onClick={() => tap(h.id)} style={{ cursor: 'pointer' }} role="button" aria-label={txText(h.name, lang)}>
-          {/* card */}
-          <rect x={-56} y={62} width={112} height={182} rx={18} fill="#fff" stroke={active === h.id ? '#0d9488' : '#e2e8f0'} strokeWidth={3} />
-          <g transform="translate(0 132)">
-            <g>
-              {active === h.id && (
-                <animateTransform attributeName="transform" type="scale" values="1;1.09;1" dur="0.5s" repeatCount="2" />
-              )}
-              {h.id === 'battery' && <BatteryHero active={active === h.id} />}
-              {h.id === 'wire' && <WireHero active={active === h.id} />}
-              {h.id === 'switch' && <SwitchHero active={active === h.id} />}
-              {h.id === 'led' && <LedHero active={active === h.id} />}
-              {h.id === 'motor' && <MotorHero active={active === h.id} />}
-            </g>
-          </g>
-          <Label x={0} y={214} size={14} text={h.name} />
-          {active === h.id && <circle cx={0} cy={228} r={5} fill="#14b8a6"><animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite" /></circle>}
-        </g>
-      ))}
-
-      {/* speech card */}
-      <rect x={54} y={262} width={532} height={56} rx={16} fill="#f0fdfa" stroke="#99f6e4" strokeWidth={2.5} />
-      <Label
-        x={320}
-        y={295}
-        size={14.5}
-        color="#0f766e"
-        text={activeHero
-          ? activeHero.say
-          : L('tap each hero to hear its sound and see its job! 👆', 'روی هر قهرمان بزن تا صدای خودشو بشنوی و کارشو ببینی! 👆')}
-      />
-    </Frame>
-  );
-}
-
-/** cute battery hero with a face */
-function BatteryHero({ active }: { active: boolean }) {
-  return (
-    <g>
-      {active && (
-        <circle r={40} fill="none" stroke="#14b8a6" strokeWidth={3}>
-          <animate attributeName="r" values="34;50" dur="1.2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.7;0" dur="1.2s" repeatCount="indefinite" />
-        </circle>
-      )}
-      <rect x={-12} y={-30} width={24} height={9} rx={3} fill="#0f766e" />
-      <rect x={-34} y={-21} width={68} height={46} rx={10} fill="#14b8a6" stroke="#0f766e" strokeWidth={2.5} />
-      <rect x={34} y={-9} width={9} height={20} rx={3} fill="#0f766e" />
-      <path d="M -6 -14 L 3 -14 L -2 -5 L 6 -5 L -8 12 L -3 0 L -10 0 Z" fill="#fbbf24" stroke="#d97706" strokeWidth={1.2} transform="translate(-16 -2) scale(0.8)" />
-      <Face />
-    </g>
-  );
-}
-
-/** cute wire hero with a face badge */
-function WireHero({ active }: { active: boolean }) {
-  const wave = 'M -44 14 C -24 -26 -4 34 16 -6 C 24 -22 34 -24 44 -14';
-  return (
-    <g>
-      <path d={wave} fill="none" stroke="#f59e0b" strokeWidth={9} strokeLinecap="round" />
-      <path d={wave} fill="none" stroke="#fcd34d" strokeWidth={4} strokeLinecap="round" opacity={0.7} />
-      {active && (
-        <g>
-          {[0, 1, 2].map((i) => (
-            <g key={i}>
-              <animateMotion dur="1.5s" begin={`${-(i / 3) * 1.5}s`} repeatCount="indefinite" path={wave} />
-              <circle r={4.5} fill="#0ea5e9" stroke="#075985" strokeWidth={1.2} />
-            </g>
-          ))}
-        </g>
-      )}
-      <circle cx={0} cy={4} r={15} fill="#fff" stroke="#f59e0b" strokeWidth={2.5} />
-      <Face s={0.9} />
-    </g>
-  );
-}
-
-/** cute switch hero — the lever flips when tapped */
-function SwitchHero({ active }: { active: boolean }) {
-  return (
-    <g>
-      <rect x={-42} y={-6} width={84} height={18} rx={9} fill="#f1f5f9" stroke="#cbd5e1" strokeWidth={2.5} />
-      <circle cx={-30} cy={3} r={6} fill="#64748b" />
-      <circle cx={30} cy={3} r={6} fill="#64748b" />
-      <g transform="translate(-30 3)">
-        <g>
-          <line x1={0} y1={0} x2={52} y2={0} stroke="#dc2626" strokeWidth={6.5} strokeLinecap="round" />
-          <circle cx={52} cy={0} r={9} fill="#fff" stroke="#dc2626" strokeWidth={2.5} />
-          <g transform="translate(52 0)"><Face s={0.62} /></g>
-        </g>
-        {active && <animateTransform attributeName="transform" type="rotate" values="0;-55;0" dur="0.7s" repeatCount="indefinite" additive="sum" />}
-      </g>
-    </g>
-  );
-}
-
-/** cute LED hero — glows when tapped */
-function LedHero({ active }: { active: boolean }) {
-  return (
-    <g>
-      {active && (
-        <g>
-          <circle r={26} fill="#fde047" opacity={0.45}>
-            <animate attributeName="r" values="22;34;22" dur="1.1s" repeatCount="indefinite" />
-          </circle>
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-            <line
-              key={a}
-              x1={26 * Math.cos((a * Math.PI) / 180)}
-              y1={26 * Math.sin((a * Math.PI) / 180)}
-              x2={33 * Math.cos((a * Math.PI) / 180)}
-              y2={33 * Math.sin((a * Math.PI) / 180)}
-              stroke="#f59e0b"
-              strokeWidth={3}
-              strokeLinecap="round"
-            >
-              <animate attributeName="opacity" values="0.2;1;0.2" dur="1.1s" repeatCount="indefinite" />
-            </line>
-          ))}
-        </g>
-      )}
-      <circle cx={0} cy={-4} r={18} fill={active ? '#fde047' : '#fecaca'} stroke="#ef4444" strokeWidth={2.5} />
-      <rect x={-10} y={12} width={20} height={13} rx={3} fill="#94a3b8" stroke="#64748b" strokeWidth={1.5} />
-      <line x1={-5} y1={14} x2={-5} y2={24} stroke="#64748b" strokeWidth={1.5} />
-      <line x1={5} y1={14} x2={5} y2={24} stroke="#64748b" strokeWidth={1.5} />
-      <Face s={0.85} />
-    </g>
-  );
-}
-
-/** cute motor hero — the blades spin when tapped */
-function MotorHero({ active }: { active: boolean }) {
-  return (
-    <g>
-      <circle r={24} fill="#c7d2fe" stroke="#4338ca" strokeWidth={2.5} />
-      <g>
-        {active && <animateTransform attributeName="transform" type="rotate" values="0;360" dur="0.8s" repeatCount="indefinite" />}
-        {[0, 120, 240].map((a) => (
-          <line
-            key={a}
-            x1={10 * Math.cos((a * Math.PI) / 180)}
-            y1={10 * Math.sin((a * Math.PI) / 180)}
-            x2={21 * Math.cos((a * Math.PI) / 180)}
-            y2={21 * Math.sin((a * Math.PI) / 180)}
-            stroke="#4338ca"
-            strokeWidth={4.5}
-            strokeLinecap="round"
-          />
-        ))}
-      </g>
-      <circle r={13} fill="#fff" stroke="#4338ca" strokeWidth={2.2} />
-      <Face s={0.8} />
-      <ellipse cx={-12} cy={27} rx={7} ry={4} fill="#4338ca" />
-      <ellipse cx={12} cy={27} rx={7} ry={4} fill="#4338ca" />
-    </g>
-  );
-}
-
-/** the shared cute face (eyes + smile + cheeks) */
-const Face = ({ s = 1 }: { s?: number }) => (
-  <g>
-    <circle cx={-4.5 * s} cy={-2.5 * s} r={2.3 * s} fill="#334155" />
-    <circle cx={4.5 * s} cy={-2.5 * s} r={2.3 * s} fill="#334155" />
-    <circle cx={-6.5 * s} cy={2 * s} r={1.7 * s} fill="#fda4af" opacity={0.8} />
-    <circle cx={6.5 * s} cy={2 * s} r={1.7 * s} fill="#fda4af" opacity={0.8} />
-    <path d={`M ${-4 * s} ${3.5 * s} Q 0 ${7.5 * s} ${4 * s} ${3.5 * s}`} stroke="#334155" strokeWidth={1.8 * s} fill="none" strokeLinecap="round" />
-  </g>
-);
-
-// ------------------------------------------- interactive: lesson l0-1 finale
-
 /** 5-point star polygon points (for the medal) */
 const starPoints = (cx: number, cy: number, R: number, r: number) =>
   Array.from({ length: 10 })
@@ -833,120 +440,6 @@ const Sparkle = ({ x, y, s = 1, d = 1.6, b = 0 }: { x: number; y: number; s?: nu
     </path>
   </g>
 );
-
-/** slide 5 — YOU are the commander: tap a button to command the electrons
- *  (run slow / run fast / make the lamp blink) — electronics in one picture */
-function CommandCenterScene() {
-  const { lang } = useI18n();
-  const [mode, setMode] = useState<'slow' | 'fast' | 'blink' | null>(null);
-  const dur = mode === 'slow' ? 7 : mode === 'fast' ? 2.4 : 4.2;
-  // full closed ellipse (center 320,180) — a tiny version of the circuit road
-  const road = 'M 150 180 A 170 92 0 1 1 490 180 A 170 92 0 1 1 150 180';
-  const idle = [30, 90, 150, 210, 270, 330].map((a) => ({
-    x: 320 + 170 * Math.cos((a * Math.PI) / 180),
-    y: 180 + 92 * Math.sin((a * Math.PI) / 180),
-  }));
-  const commands: { id: 'slow' | 'fast' | 'blink'; label: LocaleText; fill: string; sound: () => void }[] = [
-    { id: 'slow', label: L('🐢 run slow', '🐢 آروم بدوید'), fill: '#0284c7', sound: sfx.blip },
-    { id: 'fast', label: L('🏃 run fast', '🏃 تندتند بدوید'), fill: '#d97706', sound: sfx.whoosh },
-    { id: 'blink', label: L('💡 blink!', '💡 چشمک بزن!'), fill: '#c026d3', sound: sfx.sparkle },
-  ];
-  const commandText =
-    mode === null
-      ? L('you are the commander — tap a button to give a command! 🎖️', 'تو فرمانده‌ای! روی دکمه‌ها بزن تا فرمان بدهی! 🎖️')
-      : mode === 'slow'
-        ? L('command received: run slow and steady! 🐢', 'فرمان اجرا شد: آروم و پیوسته بدوید! 🐢')
-        : mode === 'fast'
-          ? L('command received: run super fast! ⚡', 'فرمان اجرا شد: تندتند بدوید! ⚡')
-          : L('command received: make the lamp blink! 💡', 'فرمان اجرا شد: چراغ چشمک بزنه! 💡');
-  return (
-    <Frame bg="#f5f3ff">
-      <Tag x={320} y={36} color="#7c3aed" text={L('electronics = commanding the electrons! 🎖️', 'الکترونیک یعنی فرمان دادن به الکترون‌ها! 🎖️')} />
-
-      {/* the round road */}
-      <path d={road} fill="none" stroke="#22c55e" strokeWidth={22} strokeLinecap="round" />
-      <path d={road} fill="none" stroke="#ffffff" strokeWidth={3} strokeDasharray="14 12" opacity={0.85} />
-
-      {/* battery — pushes on command */}
-      {mode && (
-        <circle cx={150} cy={180} r={20} fill="none" stroke="#14b8a6" strokeWidth={2.5}>
-          <animate attributeName="r" values="18;30" dur="1.4s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.7;0" dur="1.4s" repeatCount="indefinite" />
-        </circle>
-      )}
-      <g transform="translate(150 180) rotate(90)">
-        <PartVisual type="battery" params={{ voltage: 3 }} state={{}} />
-      </g>
-
-      {/* LED — glows (or blinks) on command */}
-      <g>
-        {mode === 'blink' && <animate attributeName="opacity" values="1;0.05;1" dur="0.8s" repeatCount="indefinite" />}
-        {mode && (
-          <circle cx={490} cy={180} r={30} fill="#fde047" opacity={0.4}>
-            <animate attributeName="r" values="26;40;26" dur="1.6s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.45;0.15;0.45" dur="1.6s" repeatCount="indefinite" />
-          </circle>
-        )}
-        <g transform="translate(490 180)">
-          <PartVisual type="led" params={{ color: 'red' }} state={mode ? { brightness: 1, running: true } : {}} />
-        </g>
-      </g>
-
-      {/* the electrons: waiting for orders, then running at the commanded speed */}
-      {mode ? (
-        <g key={`run-${mode}`}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <g key={i}>
-              <animateMotion dur={`${dur}s`} begin={`${-(i / 6) * dur}s`} repeatCount="indefinite" path={road} />
-              <CuteElectronFace r={9.5} />
-            </g>
-          ))}
-        </g>
-      ) : (
-        <g>
-          {idle.map((p, i) => (
-            <g key={i} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}>
-              <g>
-                <animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur={`${1.4 + i * 0.12}s`} repeatCount="indefinite" />
-                <CuteElectronFace r={9.5} />
-              </g>
-            </g>
-          ))}
-        </g>
-      )}
-
-      <Label x={320} y={250} size={14.5} color="#5b21b6" text={commandText} />
-
-      {/* command panel */}
-      {commands.map((cmd, i) => (
-        <g
-          key={cmd.id}
-          onClick={() => {
-            setMode(cmd.id);
-            cmd.sound();
-          }}
-          style={{ cursor: 'pointer' }}
-          role="button"
-          aria-label={txText(cmd.label, lang)}
-        >
-          <rect
-            x={170 + i * 150 - 70}
-            y={288}
-            width={140}
-            height={44}
-            rx={22}
-            fill={mode === cmd.id ? cmd.fill : '#ffffff'}
-            stroke={mode === cmd.id ? cmd.fill : '#e2e8f0'}
-            strokeWidth={3}
-          />
-          <text x={170 + i * 150} y={316} textAnchor="middle" fontSize={14.5} fontWeight={700} fill={mode === cmd.id ? '#fff' : '#475569'}>
-            {txText(cmd.label, lang)}
-          </text>
-        </g>
-      ))}
-    </Frame>
-  );
-}
 
 /** lesson l0-1 reward — the medal ceremony: confetti, a big gold medal and
  *  cheering electrons celebrate the finished lesson */
@@ -1021,7 +514,16 @@ function MedalPartyScene() {
 
 // ----------------------------------------------------------------- registry
 
-export function Scene({ spec, animated = true }: { spec: SceneSpec; animated?: boolean }) {
+export function Scene({
+  spec,
+  animated = true,
+  onTaskDone,
+}: {
+  spec: SceneSpec;
+  animated?: boolean;
+  /** challenge scenes call this when the child finishes their mission */
+  onTaskDone?: () => void;
+}) {
   const kind = spec.kind;
   const p = spec.props ?? {};
   if (!animated) {
@@ -1043,10 +545,10 @@ export function Scene({ spec, animated = true }: { spec: SceneSpec; animated?: b
     case 'detective-steps': return <DetectiveStepsScene />;
     case 'pot-demo': return <PotDemoScene />;
     case 'breadboard-map': return <BreadboardMapScene />;
-    case 'electron-wire': return <ElectronWireScene />;
-    case 'circuit-road': return <CircuitRoadScene />;
-    case 'hero-team': return <HeroTeamScene />;
-    case 'command-center': return <CommandCenterScene />;
+    // redesigned l0-1 «الکترونیک چیست؟» — see challenge-scenes.tsx
+    case 'command-intro': return <CommandIntroScene />;
+    case 'simple-vs-smart': return <SimpleVsSmartScene onTaskDone={onTaskDone} />;
+    case 'toy-hospital': return <ToyHospitalScene onTaskDone={onTaskDone} />;
     case 'medal-party': return <MedalPartyScene />;
     // interactive story scenes (AI illustration + hands-on action) — see story-scenes.tsx
     case 'room-wake': return <RoomWakeScene image={String(p.image ?? '')} />;

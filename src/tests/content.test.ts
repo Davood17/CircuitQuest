@@ -16,7 +16,6 @@ describe('content integrity', () => {
     for (const lesson of ALL_LESSONS) {
       for (const pre of lesson.unlockLessonIds) expect(all.has(pre)).toBe(true);
       expect(lesson.screens.length).toBeGreaterThanOrEqual(3);
-      // l0-1 uses a single-question end-of-lesson competition (user design); others have more
       expect(lesson.quiz.length).toBeGreaterThanOrEqual(1);
       lesson.quiz.forEach((q) => {
         if (q.type === 'mcq' || q.type === 'diagnose') {

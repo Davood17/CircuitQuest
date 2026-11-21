@@ -43,13 +43,6 @@ const loopWires = (prefix = 's'): CircuitDoc['wires'] => [
 ];
 
 describe('l0 end-of-lesson builds are achievable', () => {
-  it('l0-1 first light — wire the 3-part loop', () => {
-    const { scr } = buildOf('l0-1');
-    const doc = clone(scr.task.startCircuit!);
-    doc.wires.push(...loopWires());
-    expect(evalGoal(scr.task.goal, simulate(doc)).pass).toBe(true);
-  });
-
   it('l0-2 wake the lamp — finish the road', () => {
     const { scr } = buildOf('l0-2');
     const doc = clone(scr.task.startCircuit!);
@@ -174,8 +167,9 @@ describe('l0 end-of-lesson builds are achievable', () => {
     expect(evalGoal(scr.task.goal, simulate(doc, ['sw1'])).pass).toBe(true);
   });
 
-  it('every l0 lesson has exactly one build screen right before its quiz screen', () => {
+  it('every l0 lesson except l0-1 has exactly one build screen right before its quiz screen', () => {
     for (const lesson of LEVEL0_LESSONS) {
+      if (lesson.id === 'l0-1') continue; // redesigned: hands-on toy-hospital challenge, no lab build
       const idx = lesson.screens.findIndex((s) => s.type === 'build');
       expect(idx, lesson.id).toBeGreaterThan(-1);
       expect(lesson.screens[idx + 1]?.type, lesson.id).toBe('quiz');

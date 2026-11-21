@@ -45,11 +45,22 @@ export interface TaskSpec {
 // ---------------------------------------------------------------- screens
 
 export type Screen =
-  | { type: 'explain'; title: LocaleText; body: LocaleText; scene?: SceneSpec; tip?: LocaleText; /** friendly think-about-it question shown in a card under the body (no scoring) */ ask?: LocaleText; /** when 'robot', the body is spoken by the teacher robot in a speech bubble */ speaker?: 'robot' }
+  | {
+      type: 'explain';
+      title: LocaleText;
+      body: LocaleText;
+      scene?: SceneSpec;
+      tip?: LocaleText;
+      /** friendly think-about-it question shown in a card under the body (no scoring) */
+      ask?: LocaleText;
+      /** when 'robot', the body is spoken by the teacher robot in a speech bubble */
+      speaker?: 'robot';
+      /** optional custom label for the next-page button (e.g. «ورود به چالش») */
+      nextLabel?: LocaleText;
+    }
   | { type: 'animation'; title: LocaleText; body?: LocaleText; anim: AnimSpec }
   | { type: 'demo'; title: LocaleText; body?: LocaleText; demo: DemoSpec }
   | { type: 'build'; title: LocaleText; body?: LocaleText; task: TaskSpec }
-  | { type: 'discovery' }
   | {
       /** quiz page — new-format lessons may give it a custom title, a robot intro line and a scene */
       type: 'quiz';
@@ -158,6 +169,4 @@ export interface BadgeContext {
   tier: number;
   hasBadge: (id: string) => boolean;
   lessonDone: (id: string) => boolean;
-  /** number of discovery missions fully completed (all devices of a lesson explored) */
-  discoveryMissions: number;
 }

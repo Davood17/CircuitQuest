@@ -2,10 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson } from '@/content/types';
-import { Scene } from './scenes';
+import { CHALLENGE_KINDS, Scene } from './scenes';
 import { MiniLab } from '@/components/circuit/CircuitView';
 import { Quiz } from './Quiz';
-import { DeviceDiscovery } from './DeviceDiscovery';
 import { RobotSpeech } from './RobotSpeech';
 import { navigate } from '@/lib/router';
 import { getDoneTasks } from '@/lib/taskProgress';
@@ -25,6 +24,10 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [quizResult, setQuizResult] = useState<{ score: number; total: number } | null>(null);
   const [xpShown, setXpShown] = useState<number | null>(null);
+  /** lesson gates (user rule): the child must HEAR the whole teacher speech
+   *  and FINISH the requested mission before the next button unlocks */
+  const [speechDone, setSpeechDone] = useState(false);
+  const [taskDone, setTaskDone] = useState(false);
   const startTime = useRef(Date.now());
   const doneTasks = useRef<Set<string>>(getDoneTasks());
 
@@ -38,9 +41,17 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     setQuizResult(null);
     setXpShown(null);
     setHintsUsed(0);
+    setSpeechDone(false);
+    setTaskDone(false);
     doneTasks.current = getDoneTasks();
     startTime.current = Date.now();
   }, [lesson.id]);
+
+  // re-arm the gates on every page turn
+  useEffect(() => {
+    setSpeechDone(false);
+    setTaskDone(false);
+  }, [step]);
 
   const finishLesson = () => {
     const seconds = Math.round((Date.now() - startTime.current) / 1000);
@@ -74,8 +85,6 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   const body = () => {
     switch (screen.type) {
-      case 'discovery':
-        return <DeviceDiscovery lessonId={lesson.id} />;
       case 'explain':
         if (screen.speaker === 'robot') {
           // the teacher robot speaks the body inside a speech bubble
@@ -85,8 +94,8 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
                 <h2 className="text-2xl font-extrabold leading-snug">{tx(screen.title)}</h2>
                 <span aria-hidden className="mt-1.5 block h-1.5 w-20 rounded-full bg-gradient-to-r from-teal-400 via-amber-300 to-teal-400" />
               </div>
-              <RobotSpeech key={screen.body.en} text={tx(screen.body)} />
-              {screen.scene && <Scene spec={screen.scene} animated={motion} />}
+              <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} />
+              {screen.scene && <Scene spec={screen.scene} animated={motion} onTaskDone={() => setTaskDone(true)} />}
               {screen.tip && (
                 <div className="rounded-2xl bg-amber-50 border-2 border-amber-200 p-3.5 text-sm font-bold text-amber-900 shadow-sm">
                   💡 {tx(screen.tip)}
@@ -168,7 +177,7 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
             </h2>
             {screen.scene && <Scene spec={screen.scene} animated={motion} />}
             {screen.body && screen.speaker === 'robot' && (
-              <RobotSpeech key={screen.body.en} text={tx(screen.body)} />
+              <RobotSpeech key={screen.body.en} text={tx(screen.body)} onDone={() => setSpeechDone(true)} />
             )}
             <Quiz
               questions={lesson.quiz}
@@ -209,11 +218,28 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
     }
   };
 
+  const needsSpeech =
+    (screen.type === 'explain' || screen.type === 'quiz') && screen.speaker === 'robot' && !!screen.body;
+  const isChallenge =
+    screen.type === 'explain' && !!screen.scene && CHALLENGE_KINDS.has(screen.scene.kind);
+
   const canAdvance = useMemo(() => {
     if (screen.type === 'build') return doneTasks.current.has(`${lesson.id}:${step}`);
-    if (screen.type === 'quiz') return quizResult !== null && quizResult.score / Math.max(1, quizResult.total) >= 0.7;
+    if (screen.type === 'quiz')
+      return (
+        quizResult !== null &&
+        quizResult.score / Math.max(1, quizResult.total) >= 0.7 &&
+        (!needsSpeech || speechDone)
+      );
+    if (needsSpeech && !speechDone) return false;
+    if (isChallenge && !taskDone) return false;
     return true;
-  }, [screen, step, quizResult, lesson.id]);
+  }, [screen, step, quizResult, lesson.id, needsSpeech, speechDone, isChallenge, taskDone]);
+
+  // what the child still has to do before the next button unlocks
+  const gateHint = !canAdvance && !isLast ? (!speechDone && needsSpeech ? t('lesson.gateListen') : t('lesson.gateTask')) : null;
+  const nextText =
+    !isLast && screen.type === 'explain' && screen.nextLabel ? tx(screen.nextLabel) : t('lesson.next');
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 flex flex-col">
@@ -239,25 +265,32 @@ export function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
       {/* footer nav */}
       <footer className="border-t bg-white px-4 py-3">
-        <div className="max-w-2xl mx-auto flex gap-3">
-          {step > 0 && (
-            <Button variant="outline" className="h-12 flex-1 font-bold" onClick={() => setStep((s) => s - 1)}>
-              <ArrowLeft className="w-5 h-5 cq-flip-rtl" />
-            </Button>
+        <div className="max-w-2xl mx-auto">
+          {gateHint && (
+            <p className="mb-2 text-center text-[13px] font-extrabold text-teal-600 animate-pulse" aria-live="polite">
+              🔒 {gateHint}
+            </p>
           )}
-          {!isLast ? (
-            <Button
-              className="h-12 flex-[2] font-bold bg-teal-600 hover:bg-teal-700"
-              disabled={!canAdvance}
-              onClick={() => setStep((s) => s + 1)}
-            >
-              {t('lesson.next')} <ArrowRight className="w-5 h-5 ms-1 cq-flip-rtl" />
-            </Button>
-          ) : (
-            <Button className="h-12 flex-[2] font-bold bg-amber-500 hover:bg-amber-600" onClick={finishLesson}>
-              {t('lesson.finish')} 🎉
-            </Button>
-          )}
+          <div className="flex gap-3">
+            {step > 0 && (
+              <Button variant="outline" className="h-12 flex-1 font-bold" onClick={() => setStep((s) => s - 1)}>
+                <ArrowLeft className="w-5 h-5 cq-flip-rtl" />
+              </Button>
+            )}
+            {!isLast ? (
+              <Button
+                className="h-12 flex-[2] font-bold bg-teal-600 hover:bg-teal-700"
+                disabled={!canAdvance}
+                onClick={() => setStep((s) => s + 1)}
+              >
+                {nextText} <ArrowRight className="w-5 h-5 ms-1 cq-flip-rtl" />
+              </Button>
+            ) : (
+              <Button className="h-12 flex-[2] font-bold bg-amber-500 hover:bg-amber-600" onClick={finishLesson}>
+                {t('lesson.finish')} 🎉
+              </Button>
+            )}
+          </div>
         </div>
       </footer>
     </div>

@@ -207,14 +207,6 @@ html[data-cq-contrast='high'] {
 
 .cq-path-pulse { animation: cq-path-pulse 2s ease-in-out infinite; }
 
-/* discovery: playful wiggle for the magnifier / curiosity cues */
-@keyframes cq-wiggle {
-  0%, 100% { transform: rotate(-8deg) translateY(0); }
-  50% { transform: rotate(9deg) translateY(-3px); }
-}
-
-.cq-wiggle { animation: cq-wiggle 1.7s ease-in-out infinite; }
-
 .cq-flow-dash {
   stroke-dasharray: 7 14;
   animation: cq-flow 1s linear infinite;

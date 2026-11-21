@@ -17,13 +17,6 @@ export const BADGES: BadgeDef[] = [
     rule: (c) => c.lessons >= 1,
   },
   {
-    id: 'curious-engineer',
-    emoji: '🧰',
-    title: L('Curious Engineer', 'مهندس کنجکاو'),
-    description: L('Explore inside all 5 devices', 'داخل هر ۵ وسیله را کشف کردی'),
-    rule: (c) => c.discoveryMissions >= 1,
-  },
-  {
     id: 'led-master',
     emoji: '💡',
     title: L('LED Master', 'استاد ال‌ای‌دی'),

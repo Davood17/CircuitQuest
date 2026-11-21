@@ -23,7 +23,7 @@ import { useI18n } from '@/lib/i18n';
 import { sfx } from '@/lib/sfx';
 import { groupDialogue } from '@/lib/dialogue';
 
-export function RobotSpeech({ text }: { text: string }) {
+export function RobotSpeech({ text, onDone }: { text: string; onDone?: () => void }) {
   const motion = useSettings((s) => s.motion);
   const { t } = useI18n();
   const chunks = useMemo(() => groupDialogue(text), [text]);
@@ -36,6 +36,12 @@ export function RobotSpeech({ text }: { text: string }) {
   useEffect(() => () => {
     if (talkTimer.current) window.clearTimeout(talkTimer.current);
   }, []);
+
+  // the whole speech has been heard → unlock the gate (lesson "next" button)
+  const heardAll = idx >= chunks.length - 1;
+  useEffect(() => {
+    if (heardAll) onDone?.();
+  }, [heardAll, onDone]);
 
   const cur = chunks[Math.min(idx, chunks.length - 1)] ?? [];
   const hasMore = idx < chunks.length - 1;
