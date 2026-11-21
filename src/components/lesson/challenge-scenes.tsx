@@ -44,32 +44,34 @@ export function CommandIntroScene() {
 
   return (
     <svg viewBox="0 0 640 300" className="w-full rounded-2xl border" style={{ background: 'linear-gradient(180deg,#e0f2fe 0%,#f0f9ff 55%,#fef9c3 100%)' }} role="img" aria-label={tx(L('The engineering room', 'اتاق مهندسی'))}>
-      {/* window with sun */}
-      <rect x="500" y="30" width="100" height="76" rx="10" fill="#bae6fd" stroke="#7dd3fc" strokeWidth="3" />
-      <circle cx="530" cy="60" r="13" fill="#fde047" />
-      <path d="M 530 38 L 530 30 M 530 82 L 530 90 M 508 60 L 500 60 M 552 60 L 560 60" stroke="#fde047" strokeWidth="3" strokeLinecap="round" />
+      {/* window with sun (small & high, so the card row below stays clear) */}
+      <rect x="505" y="22" width="95" height="64" rx="10" fill="#bae6fd" stroke="#7dd3fc" strokeWidth="3" />
+      <circle cx="533" cy="52" r="12" fill="#fde047" />
+      <path d="M 533 34 L 533 27 M 533 70 L 533 77 M 515 52 L 508 52 M 551 52 L 558 52" stroke="#fde047" strokeWidth="3" strokeLinecap="round" />
       {/* wall shelf with tools */}
       <rect x="30" y="34" width="150" height="8" rx="4" fill="#94a3b8" />
       <text x="52" y="30" fontSize="17">🔧</text>
       <text x="86" y="30" fontSize="17">🪛</text>
       <text x="120" y="30" fontSize="17">🔋</text>
+      {/* welcome banner — TOP CENTER, hanging between shelf & window,
+          safely away from the three cards below */}
+      <rect x="190" y="22" width="260" height="46" rx="12" fill="#ffffff" stroke="#38bdf8" strokeWidth="3" />
+      <text x="320" y="51" fontSize={lang === 'fa' ? 15 : 13.5} fontWeight="800" fill="#0369a1" textAnchor="middle">
+        {tx(L('Welcome to the world of commanding!', 'به دنیای فرماندهی خوش اومدی!'))}
+      </text>
       {/* engineering desk */}
       <rect x="60" y="212" width="520" height="12" rx="6" fill="#d6a75c" />
       <rect x="96" y="224" width="14" height="42" rx="4" fill="#b8873f" />
       <rect x="530" y="224" width="14" height="42" rx="4" fill="#b8873f" />
-      {/* welcome banner on the desk */}
-      <rect x="205" y="160" width="230" height="40" rx="12" fill="#ffffff" stroke="#38bdf8" strokeWidth="3" />
-      <text x="320" y="186" fontSize="16" fontWeight="800" fill="#0369a1" textAnchor="middle">
-        {tx(L('Welcome to the world of commanding!', 'به دنیای فرماندهی خوش اومدی!'))}
-      </text>
-      {/* the three device cards */}
+      {/* the three device cards — middle band: below the banner, above the desk,
+          never touching the writing or the window */}
       {cards.map((c, i) => {
         const x = 78 + i * 168;
         return (
           <g key={i}>
-            <rect x={x} y="82" width="140" height="104" rx="16" fill="#ffffff" stroke={c.color} strokeWidth="4" />
-            <text x={x + 70} y="132" fontSize="34" textAnchor="middle">{c.icon}</text>
-            <text x={x + 70} y="168" fontSize="14" fontWeight="800" fill="#334155" textAnchor="middle">
+            <rect x={x} y="94" width="140" height="104" rx="16" fill="#ffffff" stroke={c.color} strokeWidth="4" />
+            <text x={x + 70} y="144" fontSize="34" textAnchor="middle">{c.icon}</text>
+            <text x={x + 70} y="180" fontSize="14" fontWeight="800" fill="#334155" textAnchor="middle">
               {tx(c.label)}
             </text>
           </g>
