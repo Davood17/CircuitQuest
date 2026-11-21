@@ -158,11 +158,15 @@ function Shell() {
   return (
     <div
       lang={lang}
-      className="min-h-[100dvh] bg-background text-foreground flex flex-col"
+      className="min-h-[100dvh] cq-page-bg"
       style={{ ['--motion' as never]: motion ? '1' : '0' }}
     >
-      <div className={fullScreen ? 'flex-1' : 'flex-1'}>{content}</div>
-      {!fullScreen && <TabBar />}
+      {/* phone-like centered column: keeps the layout tidy on wide screens
+          (on phones it simply fills the viewport, so nothing changes there) */}
+      <div className="max-w-3xl mx-auto w-full min-h-[100dvh] flex flex-col bg-background text-foreground cq-app-column">
+        <div className={fullScreen ? 'flex-1' : 'flex-1'}>{content}</div>
+        {!fullScreen && <TabBar />}
+      </div>
     </div>
   );
 }

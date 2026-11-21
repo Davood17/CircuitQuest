@@ -37,6 +37,7 @@ export const en = {
   'home.medium': 'Medium',
   'home.hard': 'Tricky',
   'home.noBadges': 'Finish your first lesson to earn a badge!',
+  'home.footer': 'Made with ❤️ for young circuit explorers',
   // learn
   'learn.title': 'Learning path',
   'learn.minutes': '~{n} min',

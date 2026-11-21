@@ -22,6 +22,11 @@ import {
 
 const AVATARS = ['⚡', '🔧', '💡', '🚀', '🦊', '🐼', '🐙', '🌟'];
 
+/** locale-aware digits: Persian numerals in fa, Latin digits everywhere else */
+function digits(lang: string, n: number | string): string {
+  return lang === 'fa' ? toFaDigits(String(n)) : String(n);
+}
+
 // ------------------------------------------------------------------ HOME
 
 /** journey stations on the home map: real levels first, then dream stations */
@@ -36,7 +41,7 @@ const PATH_STATIONS = [
 /** tiny glowing circuit → LED sketch for the daily-challenge card */
 function ChallengeArt() {
   return (
-    <svg viewBox="0 0 92 56" width="86" className="shrink-0" aria-hidden="true">
+    <svg viewBox="0 0 92 56" width={76} className="shrink-0" aria-hidden="true">
       <rect x="4" y="32" width="18" height="14" rx="3" fill="#fde047" stroke="#a16207" strokeWidth="2" />
       <path d="M 13 32 V 14 H 62" stroke="#e9d5ff" strokeWidth="3" fill="none" strokeLinecap="round" />
       <path d="M 13 46 H 62" stroke="#e9d5ff" strokeWidth="3" fill="none" strokeLinecap="round" />
@@ -55,7 +60,7 @@ function ChallengeArt() {
 /** big cartoon flashlight: parts → a real tool you build yourself */
 function FlashlightArt() {
   return (
-    <svg viewBox="0 0 104 60" width="96" className="shrink-0" aria-hidden="true">
+    <svg viewBox="0 0 104 60" width={84} className="shrink-0" aria-hidden="true">
       <g stroke="#f59e0b" strokeWidth="3" strokeLinecap="round">
         <line x1="90" y1="16" x2="97" y2="11" />
         <line x1="92" y1="25" x2="100" y2="25" />
@@ -135,9 +140,9 @@ export function HomeScreen() {
   });
 
   return (
-    <div className="pb-4">
+    <div className="pb-6">
       {/* ═══ HEADER: who am I · what level · how far to next ═══ */}
-      <div className="bg-gradient-to-br from-teal-600 to-teal-800 text-white p-5 rounded-b-3xl">
+      <div className="bg-gradient-to-br from-teal-600 to-teal-800 text-white p-5 rounded-b-3xl max-w-2xl mx-auto w-full">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate({ screen: 'profile' })}
@@ -168,7 +173,7 @@ export function HomeScreen() {
           <div className="h-3.5 rounded-full bg-white/20 overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400 transition-all relative"
-              style={{ width: `${Math.max(4, pct)}%` }}
+              style={{ width: `${Math.max(8, pct)}%` }}
             />
           </div>
           <p className="text-xs text-amber-200 mt-1.5 font-extrabold">✨ {t('home.xpToNext', { xp: Math.max(0, nextXp - progress.xp) })}</p>
@@ -177,9 +182,9 @@ export function HomeScreen() {
 
       <div className="p-4 space-y-4 max-w-2xl mx-auto">
         {/* ═══ SAFETY — mascot's short friendly reminder ═══ */}
-        <div className="flex items-center gap-2 rounded-3xl bg-amber-50 border-2 border-amber-200 p-2.5">
-          <Mascot size={62} className="shrink-0" />
-          <div className="flex-1 rounded-2xl bg-white/90 px-3 py-2">
+        <div className="flex items-center gap-3 rounded-3xl bg-amber-50 border-2 border-amber-200 p-3">
+          <Mascot size={54} className="shrink-0" />
+          <div className="flex-1 min-w-0 rounded-2xl bg-white/90 px-3.5 py-2.5">
             <p className="text-sm font-extrabold text-amber-900 leading-snug">⚡ {t('home.safetyTitle')}</p>
             <p className="text-[13px] font-bold text-amber-800 leading-snug mt-0.5">🔋 {t('home.safetyBody')}</p>
           </div>
@@ -199,11 +204,11 @@ export function HomeScreen() {
                 <button
                   onClick={() => st.isLevel && navigate({ screen: 'learn' })}
                   className={`w-full flex items-center gap-3 rounded-2xl p-1.5 text-start transition-colors ${
-                    st.current ? 'bg-teal-50' : st.isLevel ? 'hover:bg-slate-50' : 'opacity-75'
+                    st.current ? 'bg-teal-50' : st.isLevel ? 'hover:bg-slate-50' : 'cursor-default'
                   }`}
                 >
                   <span
-                    className={`relative w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${
                       st.complete
                         ? 'bg-emerald-500 text-white shadow-sm'
                         : st.current
@@ -214,29 +219,36 @@ export function HomeScreen() {
                     }`}
                   >
                     {st.complete ? '✓' : st.emoji}
-                    {!st.isLevel && !st.complete && (
-                      <span className="absolute -top-1.5 -end-1.5 text-[11px]">🔒</span>
-                    )}
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className={`block font-extrabold leading-tight truncate text-[15px] ${st.isLevel ? '' : 'text-slate-500'}`}>
                       {st.title ? tx(st.title) : ''}
                     </span>
-                    {st.current && st.total > 0 && (
+                    {st.isLevel ? (
                       <span className="flex items-center gap-2 mt-1">
-                        <span className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden">
-                          <span className="block h-full rounded-full bg-teal-500" style={{ width: `${Math.round((st.done / st.total) * 100)}%` }} />
+                        <span className="h-1.5 flex-1 max-w-[150px] rounded-full bg-slate-200 overflow-hidden">
+                          <span
+                            className={`block h-full rounded-full ${st.complete ? 'bg-emerald-500' : 'bg-teal-500'}`}
+                            style={{ width: `${Math.round((st.done / st.total) * 100)}%` }}
+                          />
                         </span>
-                        <span className="text-[11px] font-extrabold text-teal-700">{toFaDigits(String(st.done))}/{toFaDigits(String(st.total))}</span>
+                        <span className={`text-[11px] font-extrabold ${st.complete ? 'text-emerald-600' : 'text-teal-700'}`}>
+                          {digits(lang, st.done)}/{digits(lang, st.total)}
+                        </span>
                       </span>
+                    ) : (
+                      <span className="block text-[11px] font-bold text-slate-400 mt-0.5">{t('home.pathSoon')}</span>
                     )}
-                    {!st.isLevel && <span className="block text-[11px] font-bold text-slate-400 mt-0.5">{t('home.pathSoon')}</span>}
                   </span>
-                  {st.current && (
+                  {st.current ? (
                     <span className="text-[10px] font-extrabold text-teal-700 bg-teal-100 rounded-full px-2 py-1 shrink-0">📍 {t('home.youAreHere')}</span>
-                  )}
-                  {st.complete && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
-                  {i === stations.length - 1 && <span className="text-xl shrink-0">🚩</span>}
+                  ) : st.complete ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                  ) : i === stations.length - 1 ? (
+                    <span className="text-xl shrink-0">🚩</span>
+                  ) : !st.isLevel ? (
+                    <span className="text-[10px] font-extrabold text-slate-400 bg-slate-100 rounded-full px-2 py-1 shrink-0">🔒 {t('home.pathSoon')}</span>
+                  ) : null}
                 </button>
               </div>
             ))}
@@ -272,20 +284,18 @@ export function HomeScreen() {
 
         {/* ═══ DAILY CHALLENGE — mission = purple, action/reward = gold ═══ */}
         <div className="rounded-3xl bg-gradient-to-br from-violet-600 to-violet-800 text-white p-5">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-xs font-extrabold text-violet-200">⚡ {t('home.daily')}</p>
-              <p className="text-lg font-extrabold mt-0.5 truncate">{daily.emoji} {tx(daily.title)}</p>
-              <p className="text-[13px] font-bold text-violet-100 line-clamp-1 mt-0.5">{tx(daily.brief)}</p>
-            </div>
-            <ChallengeArt />
-          </div>
-          <div className="flex items-center justify-between gap-2 mt-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-extrabold text-violet-200">⚡ {t('home.daily')}</p>
             <span className="rounded-full bg-amber-400 text-violet-950 text-xs font-extrabold px-3 py-1.5 shrink-0">
               🎯 {t('home.xpReward', { n: 50 })}
             </span>
+          </div>
+          <p className="text-lg font-extrabold mt-2 leading-snug">{daily.emoji} {tx(daily.title)}</p>
+          <p className="text-[13px] font-bold text-violet-100 leading-relaxed mt-1 line-clamp-2">{tx(daily.brief)}</p>
+          <div className="flex items-center gap-3 mt-4">
+            <ChallengeArt />
             <Button
-              className="h-11 rounded-full bg-amber-400 hover:bg-amber-300 text-violet-950 font-extrabold px-5 shadow-lg shadow-amber-500/30"
+              className="flex-1 h-12 rounded-2xl bg-amber-400 hover:bg-amber-300 text-violet-950 font-extrabold text-base shadow-lg shadow-amber-500/30"
               onClick={() => navigate({ screen: 'challenges' })}
             >
               {t('home.startChallenge')} <Fwd className="w-4.5 h-4.5" />
@@ -298,14 +308,11 @@ export function HomeScreen() {
           onClick={() => navigate({ screen: 'project', id: recommendedProject.id })}
           className="w-full text-start rounded-3xl bg-white border-2 border-amber-100 shadow-md shadow-amber-900/10 overflow-hidden active:scale-[0.99] transition-transform"
         >
-          <div className="bg-amber-50/70 px-5 pt-4 pb-2 flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-xs font-extrabold text-amber-600">🔧 {t('home.recommended')}</p>
-              <p className="font-extrabold text-lg leading-snug truncate mt-0.5">{recommendedProject.emoji} {tx(recommendedProject.title)}</p>
-            </div>
-            <FlashlightArt />
+          <div className="bg-amber-50/70 px-5 pt-4 pb-3">
+            <p className="text-xs font-extrabold text-amber-600">🔧 {t('home.recommended')}</p>
+            <p className="font-extrabold text-lg leading-snug mt-0.5">{recommendedProject.emoji} {tx(recommendedProject.title)}</p>
           </div>
-          <div className="px-5 pb-4 pt-2">
+          <div className="px-5 pb-4 pt-3">
             <div className="flex items-center gap-1.5 flex-wrap">
               <PartChip>🔋</PartChip>
               <span className="font-extrabold text-slate-400">+</span>
@@ -315,13 +322,16 @@ export function HomeScreen() {
               <Fwd className="w-4 h-4 text-slate-400 mx-0.5" />
               <PartChip hot>🔦</PartChip>
             </div>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[11px] font-extrabold text-slate-500">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2.5 text-[11px] font-extrabold text-slate-500">
               <span>🧩 {t('home.parts', { n: recommendedProject.materials.length })}</span>
               <span>⏱ {t('learn.minutes', { n: projectEstMin })}</span>
               <span>⭐ {t(projectDiffKey)}</span>
             </div>
-            <div className="mt-3 h-11 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center gap-2 font-extrabold text-base shadow-sm">
-              <Hammer className="w-5 h-5" /> {t('home.buildIt')}
+            <div className="flex items-center gap-3 mt-3.5">
+              <FlashlightArt />
+              <div className="flex-1 h-11 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center gap-2 font-extrabold text-base shadow-sm">
+                <Hammer className="w-5 h-5" /> {t('home.buildIt')}
+              </div>
             </div>
           </div>
         </button>
@@ -332,9 +342,9 @@ export function HomeScreen() {
             <Trophy className="w-4 h-4 text-amber-500" /> {t('home.badges')}
           </h2>
           {recentBadges.length === 0 ? (
-            <div className="flex items-center gap-2 rounded-3xl bg-white border-2 border-dashed border-slate-200 p-3">
+            <div className="flex items-center gap-3 rounded-3xl bg-white border-2 border-dashed border-slate-200 p-3">
               <Mascot size={54} className="shrink-0" />
-              <p className="text-sm font-bold text-slate-500 flex-1">{t('home.noBadges')}</p>
+              <p className="text-sm font-bold text-slate-500 flex-1 min-w-0">{t('home.noBadges')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2.5">
@@ -362,6 +372,16 @@ export function HomeScreen() {
             </div>
           )}
         </section>
+
+        {/* ═══ FOOTER — the mascot signs off and closes the page ═══ */}
+        <footer className="pt-4 pb-1 flex flex-col items-center gap-1.5 text-center">
+          <div className="flex items-center gap-2.5" aria-hidden="true">
+            <span className="h-px w-10 bg-slate-200" />
+            <Mascot size={30} />
+            <span className="h-px w-10 bg-slate-200" />
+          </div>
+          <p className="text-[11px] font-bold text-slate-400">{t('home.footer')}</p>
+        </footer>
       </div>
     </div>
   );
@@ -370,7 +390,7 @@ export function HomeScreen() {
 // ------------------------------------------------------------------ LEARN
 
 export function LearnScreen() {
-  const { t, tx } = useI18n();
+  const { t, tx, lang } = useI18n();
   const completedLessons = useProgress((s) => s.completedLessons);
   const completed = useMemo(() => new Set(Object.keys(completedLessons)), [completedLessons]);
 
@@ -378,7 +398,7 @@ export function LearnScreen() {
     <div className="p-4 pb-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-extrabold mb-1">{t('learn.title')}</h1>
       <p className="text-sm text-slate-500 font-semibold mb-5">
-        {toFaDigits(String(completed.size))}/{toFaDigits(String(ALL_LESSONS.length))} {t('progress.lessons')}
+        {digits(lang, completed.size)}/{digits(lang, ALL_LESSONS.length)} {t('progress.lessons')}
       </p>
       <div className="space-y-6">
         {LEVELS.map((level) => {
@@ -394,7 +414,7 @@ export function LearnScreen() {
                   <p className="font-extrabold leading-tight">{tx(level.title)}</p>
                   <p className="text-xs text-slate-500 font-semibold line-clamp-1">{tx(level.description)}</p>
                 </div>
-                <div className="text-xs font-extrabold text-teal-700">{toFaDigits(String(done))}/{toFaDigits(String(level.lessons.length))}</div>
+                <div className="text-xs font-extrabold text-teal-700">{digits(lang, done)}/{digits(lang, level.lessons.length)}</div>
               </div>
               <div className="grid gap-2">
                 {level.lessons.map((lesson) => {

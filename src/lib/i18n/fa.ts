@@ -39,6 +39,7 @@ export const fa: Record<TranslationKey, string> = {
   'home.medium': 'متوسط',
   'home.hard': 'چالشی',
   'home.noBadges': 'اولین درس را تمام کن تا نشان بگیری!',
+  'home.footer': 'با ❤️ برای کاوشگرهای کوچک مدار ساخته شده',
   // learn
   'learn.title': 'مسیر یادگیری',
   'learn.minutes': 'حدود {n} دقیقه',
